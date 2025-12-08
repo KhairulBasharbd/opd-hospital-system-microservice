@@ -1,0 +1,13 @@
+package com.ztrios.opd_api_gateway;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class OpdApiGatewayApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
