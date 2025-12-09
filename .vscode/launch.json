@@ -1,0 +1,82 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "OpdApiGatewayApplication",
+            "request": "launch",
+            "mainClass": "com.ztrios.opd_api_gateway.OpdApiGatewayApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OpdEurekaServerApplication<opd-eureka-server>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ztrios.opd_eureka_server.OpdEurekaServerApplication",
+            "projectName": "opd-eureka-server",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OpdAppointmentServiceApplication<opd-appointment-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ztrios.opd_appointment_service.OpdAppointmentServiceApplication",
+            "projectName": "opd-appointment-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OpdAuthServiceApplication<opd-auth-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ztrios.opd_auth_service.OpdAuthServiceApplication",
+            "projectName": "opd-auth-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OpdBillingServiceApplication<opd-billing-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ztrios.opd_billing_service.OpdBillingServiceApplication",
+            "projectName": "opd-billing-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OpdDoctorServiceApplication<opd-doctor-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ztrios.opd_doctor_service.OpdDoctorServiceApplication",
+            "projectName": "opd-doctor-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OpdNotificationServiceApplication<opd-notification-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ztrios.opd_notification_service.OpdNotificationServiceApplication",
+            "projectName": "opd-notification-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OpdApiGatewayApplication<opd-api-gateway>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.ztrios.opd_api_gateway.OpdApiGatewayApplication",
+            "projectName": "opd-api-gateway",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
