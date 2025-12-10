@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "patient_profiles")
-@Builder
+
 @Data
 @NoArgsConstructor
 public class PatientProfileEntity {
