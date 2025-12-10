@@ -1,4 +1,3 @@
-
 services:
   postgres:
     image: postgres:16
@@ -24,9 +23,25 @@ services:
     networks:
       - opd-net
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: opd-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - opd-net
+    depends_on:
+      - postgres
+
 networks:
   opd-net:
 
 volumes:
   postgres_data:
   mongo_data:
+  pgadmin_data:
