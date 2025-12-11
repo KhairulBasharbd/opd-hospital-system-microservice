@@ -1,7 +1,9 @@
 package com.ztrios.opd_auth_service.controller;
 
 
-import com.ztrios.opd_auth_service.dto.AuthResponse;
+import com.ztrios.opd_auth_service.dto.LoginRequest;
+import com.ztrios.opd_auth_service.dto.LoginResponse;
+import com.ztrios.opd_auth_service.dto.RegisterPatientResponse;
 import com.ztrios.opd_auth_service.dto.RegisterPatientRequest;
 import com.ztrios.opd_auth_service.service.AuthService;
 import jakarta.validation.Valid;
@@ -25,17 +27,19 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register/patient")
-    public ResponseEntity<AuthResponse> registerPatient(@Valid @RequestBody RegisterPatientRequest request) {
-        //AuthResponse response = registerPatientUseCase.execute(request);
+    public ResponseEntity<RegisterPatientResponse> registerPatient(@Valid @RequestBody RegisterPatientRequest request) {
 
-
-        AuthResponse response = authService.register(request);
+        RegisterPatientResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-//        AuthResponse response = loginUseCase.execute(request);
-//        return ResponseEntity.ok(response);
-//    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
+        var result = authService.login(req);
+        return ResponseEntity.ok(new LoginResponse(result.accessToken(), "Bearer", result.expiresInSeconds(), result.email()));
+    }
+
+
 }
