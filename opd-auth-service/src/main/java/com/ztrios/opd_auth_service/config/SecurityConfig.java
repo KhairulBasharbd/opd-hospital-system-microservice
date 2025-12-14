@@ -12,10 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Security configuration for Auth Service.
- * Allows unauthenticated access to health and actuator endpoints.
- */
+
 @Configuration
 @EnableWebSecurity
 
@@ -36,7 +33,7 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/**")
+                .requestMatchers("/register/*", "/login", "/info", "/health", "/actuator/**")
                 .permitAll()
 
                 .anyRequest().authenticated()
