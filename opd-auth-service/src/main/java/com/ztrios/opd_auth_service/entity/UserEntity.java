@@ -1,6 +1,7 @@
 package com.ztrios.opd_auth_service.entity;
 
 import com.ztrios.opd_auth_service.entity.PatientProfileEntity;
+import com.ztrios.opd_auth_service.enums.AuthProvider;
 import com.ztrios.opd_auth_service.enums.Role;
 import com.ztrios.opd_auth_service.enums.Status;
 import jakarta.persistence.*;
@@ -38,6 +39,10 @@ public class UserEntity {
     private Role role;
 
     private Status status;
+
+//    @Enumerated(EnumType.STRING)
+//    @Column(nullable = false)
+//    private AuthProvider provider;
 
 
     @CreatedDate
