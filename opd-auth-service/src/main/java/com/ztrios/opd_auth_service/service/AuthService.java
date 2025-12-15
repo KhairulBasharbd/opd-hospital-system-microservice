@@ -55,6 +55,7 @@ public class AuthService {
         Instant now = Instant.now();
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
+        //user.setProvider(AuthProvider.LOCAL);
 
 
         // Create Patient Profile
