@@ -90,6 +90,13 @@ public class AuthService {
 //            throw new AuthenticationFailedException("Account not active");
 //        }
 
+        // Optional: check of provider
+//        if (user.getProvider() != AuthProvider.LOCAL) {
+//            throw new IllegalStateException(
+//                    "Please login using " + user.getProvider());
+//        }
+
+
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new AuthenticationFailedException("Invalid credentials");
         }
