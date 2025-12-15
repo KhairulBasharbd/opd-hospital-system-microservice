@@ -5,7 +5,7 @@ import com.ztrios.opd_auth_service.dto.PatientProfileResponse;
 import com.ztrios.opd_auth_service.dto.PatientProfileUpdateRequest;
 import com.ztrios.opd_auth_service.entity.PatientProfileEntity;
 import com.ztrios.opd_auth_service.entity.UserEntity;
-import com.ztrios.opd_auth_service.exception.ResourceNotFoundException;
+import com.ztrios.opd_auth_service.exception.custom.ResourceNotFoundException;
 import com.ztrios.opd_auth_service.mapper.PatientProfileMapper;
 import com.ztrios.opd_auth_service.repository.PatientProfileRepository;
 import com.ztrios.opd_auth_service.repository.UserRepository;
