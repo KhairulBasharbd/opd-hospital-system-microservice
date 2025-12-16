@@ -5,6 +5,10 @@ import com.ztrios.opd_auth_service.entity.PatientProfileEntity;
 import com.ztrios.opd_auth_service.entity.UserEntity;
 import com.ztrios.opd_auth_service.enums.Role;
 import com.ztrios.opd_auth_service.enums.Status;
+import com.ztrios.opd_auth_service.exception.custom.OAuthEmailNotFoundException;
+import com.ztrios.opd_auth_service.exception.custom.OAuthProviderNotSupportedException;
+import com.ztrios.opd_auth_service.exception.custom.OAuthUserCreationException;
+import com.ztrios.opd_auth_service.exception.custom.UserAccountInactiveException;
 import com.ztrios.opd_auth_service.repository.PatientProfileRepository;
 import com.ztrios.opd_auth_service.repository.UserRepository;
 import com.ztrios.opd_auth_service.security.oauth2userinfo.OAuth2UserInfo;
@@ -37,43 +41,67 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2User oAuth2User = super.loadUser(request);
 
-        String provider =
-                request.getClientRegistration().getRegistrationId();
+        String provider = request
+                .getClientRegistration()
+                .getRegistrationId();
 
-        OAuth2UserInfo userInfo =
-                OAuth2UserInfoFactory.getUserInfo(provider, oAuth2User.getAttributes());
+        OAuth2UserInfo userInfo;
+        try {
+            userInfo = OAuth2UserInfoFactory
+                    .getUserInfo(provider, oAuth2User.getAttributes());
+        } catch (Exception ex) {
+            throw new OAuthProviderNotSupportedException(provider);
+        }
 
-        // 1️⃣ Find or create local user
-        UserEntity user = userRepository
-                .findByEmail(userInfo.getEmail())
-                .orElseGet(() -> {
-                    UserEntity newUser = new UserEntity();
-                    newUser.setEmail(userInfo.getEmail());
-                    newUser.setFullName(userInfo.getName());
-                    newUser.setRole(Role.PATIENT);
-                    newUser.setStatus(Status.ACTIVE);
-                    Instant now = Instant.now();
-                    newUser.setCreatedAt(now);
-                    newUser.setUpdatedAt(now);
+        if (userInfo.getEmail() == null || userInfo.getEmail().isBlank()) {
+            throw new OAuthEmailNotFoundException();
+        }
 
-                    PatientProfileEntity patient = new PatientProfileEntity();
-                    patient.setUser(newUser);
+        try {
+            UserEntity user = userRepository
+                    .findByEmail(userInfo.getEmail())
+//                    .map(existingUser -> {
+//                        if (existingUser.getStatus() != Status.ACTIVE) {
+//                            throw new UserAccountInactiveException();
+//                        }
+//                        return existingUser;
+//                    })
+                    .orElseGet(() -> createNewOAuthUser(userInfo));
 
-                    newUser.setPatientProfile(patient);
+            return new DefaultOAuth2User(
+                    List.of(new SimpleGrantedAuthority(user.getRole().toString())),
+                    oAuth2User.getAttributes(),
+                    "email"
+            );
 
-                    //newUser.setProvider(AuthProvider.GOOGLE);
-
-                    UserEntity savedUser = userRepository.save(newUser);
-                    patientProfileRepository.save(patient);
-
-                    return savedUser;
-
-                });
-
-        // 2️⃣ Return Spring Security principal
-        return new DefaultOAuth2User(
-                List.of(new SimpleGrantedAuthority(user.getRole().toString())),
-                oAuth2User.getAttributes(),
-                "email");
+        } catch (RuntimeException ex) {
+            throw ex; // rethrow custom exceptions
+        } catch (Exception ex) {
+            throw new OAuthUserCreationException("Failed to create OAuth user", ex);
+        }
     }
+
+    private UserEntity createNewOAuthUser(OAuth2UserInfo userInfo) {
+
+        Instant now = Instant.now();
+
+        UserEntity newUser = new UserEntity();
+        newUser.setEmail(userInfo.getEmail());
+        newUser.setFullName(userInfo.getName());
+        newUser.setRole(Role.PATIENT);
+        newUser.setStatus(Status.ACTIVE);
+        newUser.setCreatedAt(now);
+        newUser.setUpdatedAt(now);
+
+        PatientProfileEntity patient = new PatientProfileEntity();
+        patient.setUser(newUser);
+        newUser.setPatientProfile(patient);
+
+        UserEntity savedUser = userRepository.save(newUser);
+        patientProfileRepository.save(patient);
+
+        return savedUser;
+    }
+
+
 }
