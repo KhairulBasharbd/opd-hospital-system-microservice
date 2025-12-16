@@ -13,6 +13,7 @@ import com.ztrios.opd_auth_service.repository.PatientProfileRepository;
 import com.ztrios.opd_auth_service.repository.UserRepository;
 import com.ztrios.opd_auth_service.security.oauth2userinfo.OAuth2UserInfo;
 import com.ztrios.opd_auth_service.security.oauth2userinfo.OAuth2UserInfoFactory;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -35,6 +36,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         this.patientProfileRepository = patientProfileRepository;
     }
 
+    @Transactional
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request)
             throws OAuth2AuthenticationException {
