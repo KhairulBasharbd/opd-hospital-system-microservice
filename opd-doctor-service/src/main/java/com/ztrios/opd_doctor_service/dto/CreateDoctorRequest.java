@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record CreateDoctorRequest(
+                                  UUID userId,
                                   String degree,
                                   Specialization specialization,
                                   Integer experienceYears,
