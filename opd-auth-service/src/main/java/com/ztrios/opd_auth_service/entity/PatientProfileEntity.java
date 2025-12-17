@@ -7,7 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.catalina.User;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -26,8 +29,22 @@ public class PatientProfileEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserEntity user;
 
+
     private LocalDate dateOfBirth;
+
+    @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    @Enumerated(EnumType.STRING)
     private BloodGroup bloodGroup;
     private String address;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt = Instant.now();
+
+    @LastModifiedDate
+    @Column(nullable = true, updatable = true)
+    private Instant updatedAt ;
+
 }
