@@ -35,9 +35,11 @@ public class UserEntity {
 
     private String phone;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
 //    @Enumerated(EnumType.STRING)
@@ -50,7 +52,7 @@ public class UserEntity {
     private Instant createdAt = Instant.now();
 
     @LastModifiedDate
-    @Column(nullable = false, updatable = true)
+    @Column(nullable = true, updatable = true)
     private Instant updatedAt ;
 
 
