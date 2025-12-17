@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -44,18 +45,18 @@ public class DoctorScheduleEntity {
     private LocalTime endTime;
 
     @Column(name = "maximum_no_of_patient")
-    private int maxPatients;
+    private Integer maxPatients;
 
     @Column(name = "no_of_appointed_patient")
-    private int appointedPatients = 0;
+    private Integer appointedPatients = 0;
 
 
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = true)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 }
