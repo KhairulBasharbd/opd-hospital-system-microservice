@@ -1,6 +1,6 @@
 package com.ztrios.opd_doctor_service.enums;
 
-public enum DayOfWeek {
+public enum DaysOfWeek {
 
     SATURDAY,
     SUNDAY,
