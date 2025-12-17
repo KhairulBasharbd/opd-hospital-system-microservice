@@ -56,7 +56,7 @@ public class DoctorEntity {
     @Column(length = 1000)
     private String bio;
 
-    private String createdBy;
+    private UUID createdBy;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
