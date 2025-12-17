@@ -52,9 +52,7 @@ public class AuthService {
         user.setRole(Role.PATIENT);
         user.setStatus(Status.ACTIVE);
 
-        Instant now = Instant.now();
-        user.setCreatedAt(now);
-        user.setUpdatedAt(now);
+
         //user.setProvider(AuthProvider.LOCAL);
 
 
