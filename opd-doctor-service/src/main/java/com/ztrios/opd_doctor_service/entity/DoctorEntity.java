@@ -60,7 +60,7 @@ public class DoctorEntity {
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
     @LastModifiedDate
     @Column(name = "updated_at", nullable = true)
