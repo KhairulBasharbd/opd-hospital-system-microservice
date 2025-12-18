@@ -2,16 +2,18 @@ package com.ztrios.opd_doctor_service.init;
 
 import com.ztrios.opd_doctor_service.client.AuthClient;
 import com.ztrios.opd_doctor_service.dto.UserCreationRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 
     @Component
+    @RequiredArgsConstructor
     public class DataInitializer implements CommandLineRunner {
 
-        @Autowired
-        private AuthClient authClient;
+        //@Autowired
+        private final AuthClient authClient;
 
         @Override
         public void run(String... args) throws Exception {
