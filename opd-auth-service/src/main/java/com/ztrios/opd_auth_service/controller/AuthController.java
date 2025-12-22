@@ -1,19 +1,13 @@
 package com.ztrios.opd_auth_service.controller;
 
 
-import com.ztrios.opd_auth_service.dto.LoginRequest;
-import com.ztrios.opd_auth_service.dto.LoginResponse;
-import com.ztrios.opd_auth_service.dto.RegisterPatientResponse;
-import com.ztrios.opd_auth_service.dto.RegisterPatientRequest;
+import com.ztrios.opd_auth_service.dto.*;
 import com.ztrios.opd_auth_service.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping
@@ -33,6 +27,18 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+
+    @PostMapping("/register/users")
+    public ResponseEntity<RegisterPatientResponse> registerPatient(@Valid @RequestBody UserCreationRequest request) {
+
+        RegisterPatientResponse response = authService.userRegister(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/admin/exists")
+    public boolean adminExists() {
+        return authService.adminExists();
+    }
 
 
     @PostMapping("/login")
