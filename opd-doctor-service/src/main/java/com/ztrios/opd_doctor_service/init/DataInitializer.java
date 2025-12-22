@@ -2,6 +2,8 @@ package com.ztrios.opd_doctor_service.init;
 
 import com.ztrios.opd_doctor_service.client.AuthClient;
 import com.ztrios.opd_doctor_service.dto.UserCreationRequest;
+import com.ztrios.opd_doctor_service.dto.UserCreationResponse;
+import com.ztrios.opd_doctor_service.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -23,9 +25,9 @@ import org.springframework.stereotype.Component;
                         "admin",
                         "adminpassword", // Hash in auth service
                         "admin@opd.com",
-                        "ADMIN"
+                        Role.ADMIN
                 );
-                authClient.createUser(adminRequest);
+                UserCreationResponse res =  authClient.createUser(adminRequest);
                 // Optionally, create a default doctor linked to this admin if needed
             }
         }
