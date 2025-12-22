@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/login",
                                 "/register/**",
+                                "/admin/exists",
                                 "/oauth2/**",
                                 "/actuator/**")
                         .permitAll()
