@@ -2,10 +2,7 @@ package com.ztrios.opd_auth_service.service;
 
 
 import com.ztrios.opd_auth_service.config.JwtUtil;
-import com.ztrios.opd_auth_service.dto.LoginRequest;
-import com.ztrios.opd_auth_service.dto.LoginResult;
-import com.ztrios.opd_auth_service.dto.RegisterPatientResponse;
-import com.ztrios.opd_auth_service.dto.RegisterPatientRequest;
+import com.ztrios.opd_auth_service.dto.*;
 import com.ztrios.opd_auth_service.entity.PatientProfileEntity;
 import com.ztrios.opd_auth_service.entity.UserEntity;
 import com.ztrios.opd_auth_service.enums.Role;
@@ -76,6 +73,31 @@ public class AuthService {
 
     }
 
+
+    public boolean adminExists() {
+        return userRepository.existsByRole(Role.ADMIN);
+    }
+
+    public RegisterPatientResponse userRegister(UserCreationRequest request){
+
+        if (userRepository.existsByEmail(request.email())) {
+
+            log.warn("Email already registered:  {}", request.email());
+            throw new UserAlreadyExistsException("Email already registered: " + request.email());
+        }
+
+        // Create User
+        UserEntity user = new UserEntity();
+        user.setFullName(request.username());
+        user.setEmail(request.email());
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setRole(request.role());
+        user.setStatus(Status.ACTIVE);
+        userRepository.save(user);
+        return new RegisterPatientResponse("", request.role()  + " registered successfully");
+
+
+    }
 
 
     public LoginResult login(LoginRequest request) {
