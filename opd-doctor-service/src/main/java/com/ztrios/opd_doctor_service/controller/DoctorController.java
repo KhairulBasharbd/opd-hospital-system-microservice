@@ -1,12 +1,12 @@
 package com.ztrios.opd_doctor_service.controller;
 
 import com.ztrios.opd_doctor_service.dto.*;
-import com.ztrios.opd_doctor_service.service.DoctorService;
+import com.ztrios.opd_doctor_service.service.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-//import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/doctors")
+@Slf4j
 public class DoctorController {
 
     @Autowired
@@ -22,14 +23,20 @@ public class DoctorController {
     // CRUD for Doctors (Admin only)
     @PostMapping
 //    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DoctorResponse> createDoctor(@RequestBody CreateDoctorRequest request) {
-        UUID createdBy = getCurrentUserId(); // From security context
+    public ResponseEntity<DoctorResponse> createDoctor(       @RequestHeader("X-User-Id") String userId,
+                                                              @RequestHeader("X-User-Role") String role,
+                                                              @RequestBody CreateDoctorRequest request) {
+        UUID createdBy = UUID.fromString(userId);
+
+        log.info("🚀 X-User-Id : "+userId);
+        log.info("🚀 X-User-Role : "+role);
+
+
         DoctorResponse response = doctorService.createDoctor(request, createdBy);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DoctorResponse>> getAllDoctors() {
         return ResponseEntity.ok(doctorService.getAllDoctors());
     }
