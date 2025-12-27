@@ -1,0 +1,89 @@
+#spring:
+#  application:
+#    name: opd-api-gateway
+#  cloud:
+#    gateway:
+#      routes:
+#        - id: opd-auth-service
+#          uri: lb://opd-auth-service
+#          predicates:
+#            - Path=/auth/**
+#          filters:
+#            - StripPrefix=1
+#        - id: opd-doctor-service
+#          uri: lb://opd-doctor-service
+#          predicates:
+#            - Path=/doctors/**
+#          filters:
+#            - StripPrefix=1
+#        - id: opd-appointment-service
+#          uri: lb://opd-appointment-service
+#          predicates:
+#            - Path=/appointments/**
+#          filters:
+#            - StripPrefix=1
+#        - id: opd-billing-service
+#          uri: lb://opd-billing-service
+#          predicates:
+#            - Path=/billing/**
+#          filters:
+#            - StripPrefix=1
+#        - id: opd-notification-service
+#          uri: lb://opd-notification-service
+#          predicates:
+#            - Path=/notifications/**
+#          filters:
+#            - StripPrefix=1
+
+#server:
+#  port: 8080
+#
+#security:
+#  jwt:
+#    secret: ${JWT_SECRET:x9J3Q2vN8LpW6sY4DkF1hE2bR7uV5tM3qP9cT1zB8R6yK4J8N2L0U3W5X7Y9Z1A}
+#
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#    register-with-eureka: true
+#    fetch-registry: true
+#  instance:
+#    prefer-ip-address: true
+#
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info
+#  endpoint:
+#    health:
+#      show-details: always
+#    info:
+#      enabled: true
+#
+#info:
+#  app:
+#    name: OPD API Gateway
+#    description: API Gateway for OPD Hospital System
+#    version: 1.0.0
+#  env:
+#    enabled: true
+#
+#springdoc:
+#  swagger-ui:
+#    enabled: true
+#    path: /swagger-ui.html
+#    urls:
+#      - url: /auth/v3/api-docs
+#        name: Auth Service
+#      - url: /doctors/v3/api-docs
+#        name: Doctor Service
+#      - url: /appointments/v3/api-docs
+#        name: Appointment Service
+#      - url: /billing/v3/api-docs
+#        name: Billing Service
+#      - url: /notifications/v3/api-docs
+#        name: Notification Service
+#  api-docs:
+#    enabled: true
