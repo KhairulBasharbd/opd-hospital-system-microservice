@@ -37,7 +37,14 @@ public class DoctorController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DoctorResponse>> getAllDoctors() {
+    public ResponseEntity<List<DoctorResponse>> getAllDoctors(@RequestHeader("X-User-Id") String userId,
+                                                              @RequestHeader("X-User-Role") String role) {
+
+        UUID createdBy = UUID.fromString(userId);
+
+        log.info("🚀 X-User-Id : "+userId);
+        log.info("🚀 X-User-Role : "+role);
+
         return ResponseEntity.ok(doctorService.getAllDoctors());
     }
 
