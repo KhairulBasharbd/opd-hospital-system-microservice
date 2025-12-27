@@ -30,9 +30,11 @@ public class JwtHeaderForwardingFilter extends OncePerRequestFilter {
             String email = jwt.getClaimAsString("email");
             String role = jwt.getClaimAsString("role");
 
+            // to check jwt payloads in api Gateway
             log.info("🚀 userId : " + userId);
             log.info("🚀 email : " + email);
             log.info("🚀 Role : " + role);
+            //
 
 
 
