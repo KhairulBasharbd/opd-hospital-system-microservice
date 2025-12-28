@@ -1,18 +1,16 @@
 package com.ztrios.opd_doctor_service.service;
 
 
+import com.ztrios.opd_doctor_service.repository.*;
 import com.ztrios.opd_doctor_service.dto.*;
-import com.ztrios.opd_doctor_service.entity.DoctorEntity;
-import com.ztrios.opd_doctor_service.entity.DoctorScheduleEntity;
-import com.ztrios.opd_doctor_service.exception.DoctorNotFoundException;
-import com.ztrios.opd_doctor_service.exception.ScheduleNotFoundException;
-import com.ztrios.opd_doctor_service.exception.UnauthorizedException;
-import com.ztrios.opd_doctor_service.repository.DoctorRepository;
-import com.ztrios.opd_doctor_service.repository.DoctorScheduleRepository;
+import com.ztrios.opd_doctor_service.enums.*;
+import com.ztrios.opd_doctor_service.entity.*;
+import com.ztrios.opd_doctor_service.exception.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,7 +20,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DoctorService {
     private final DoctorRepository doctorRepository;
-    private final DoctorScheduleRepository scheduleRepository;
+    private final ScheduleService scheduleService;
+
     //------------------------Doctor Service-----------------------------------------------------------
 
     public DoctorResponse createDoctor(CreateDoctorRequest request, UUID createdBy) {
@@ -56,6 +55,18 @@ public class DoctorService {
                 .collect(Collectors.toList());
     }
 
+    public List<DoctorAvailabilityResponse> getAvailableDoctors(DayOfWeek dayOfWeek, Specialization specialization){
+
+
+        return doctorRepository
+                .findAvailableDoctors(dayOfWeek, specialization)
+                .stream()
+                .map(this::mapToDoctorAvailabilityResponse)
+                .toList();
+    }
+
+
+
     public DoctorResponse updateDoctor(UUID id, UpdateDoctorRequest request) {
         DoctorEntity doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id: " + id));
@@ -79,65 +90,13 @@ public class DoctorService {
 
 
 
-    //--------------------------------Schedule Service-------------------------------------------------------
-
-    public DoctorScheduleResponse createSchedule(UUID doctorId, CreateDoctorScheduleRequest request) {
-        DoctorEntity doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with id: " + doctorId));
-        //checkAuthorizationForDoctor(doctor);
-        DoctorScheduleEntity schedule = new DoctorScheduleEntity();
-        schedule.setDoctor(doctor);
-        schedule.setDaysOfWeek(request.daysOfWeek());
-        schedule.setStartTime(request.startTime());
-        schedule.setEndTime(request.endTime());
-        schedule.setMaxPatients(request.maxPatients());
-        schedule = scheduleRepository.save(schedule);
-
-        return mapToScheduleResponse(schedule);
-    }
-
-
-    public List<DoctorScheduleResponse> getSchedulesByDoctorId(UUID doctorId) {
-        return scheduleRepository.findByDoctorId(doctorId).stream()
-                .map(this::mapToScheduleResponse)
-                .collect(Collectors.toList());
-    }
-
-    public DoctorScheduleResponse getScheduleById(UUID scheduleId) {
-        DoctorScheduleEntity schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException("Schedule not found with id: " + scheduleId));
-        return mapToScheduleResponse(schedule);
-    }
-
-    public DoctorScheduleResponse updateSchedule(UUID scheduleId, CreateDoctorScheduleRequest request) {
-        DoctorScheduleEntity schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException("Schedule not found with id: " + scheduleId));
-        //checkAuthorizationForDoctor(schedule.getDoctor());
-        schedule.setDaysOfWeek(request.daysOfWeek());
-        schedule.setStartTime(request.startTime());
-        schedule.setEndTime(request.endTime());
-        schedule.setMaxPatients(request.maxPatients());
-        schedule = scheduleRepository.save(schedule);
-
-
-        return mapToScheduleResponse(schedule);
-    }
-
-    public void deleteSchedule(UUID scheduleId) {
-        DoctorScheduleEntity schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ScheduleNotFoundException("Schedule not found with id: " + scheduleId));
-        //checkAuthorizationForDoctor(schedule.getDoctor());
-        scheduleRepository.delete(schedule);
-    }
-
-
-
 
     private DoctorResponse mapToDoctorResponse(DoctorEntity doctor) {
-        List<DoctorScheduleResponse> schedules = doctor.getSchedules() != null ?
-                doctor.getSchedules().stream().map(this::mapToScheduleResponse).collect(Collectors.toList()) : List.of();
+
+//        List<DoctorScheduleResponse> schedules = doctor.getSchedules() != null ?
+//                doctor.getSchedules().stream().map(this::mapToScheduleResponse).collect(Collectors.toList()) : List.of();
         return new DoctorResponse(
-                doctor.getUserId(),
+                doctor.getId(),
                 doctor.getDegree(),
                 doctor.getSpecialization(),
                 doctor.getExperienceYears(),
@@ -150,17 +109,52 @@ public class DoctorService {
 
         );
     }
+
+    private DoctorAvailabilityResponse mapToDoctorAvailabilityResponse(DoctorEntity doctor) {
+
+        return new DoctorAvailabilityResponse(
+                doctor.getId(),
+                doctor.getDegree(),
+                doctor.getSpecialization(),
+                doctor.getExperienceYears(),
+                doctor.getLicenseNumber(),
+                doctor.getConsultationFee(),
+                doctor.getStatus(),
+                doctor.getBio()
+//                doctor.getSchedules().stream().map(this::mapToScheduleResponse).collect(Collectors.toList())
+
+        );
+    }
+
+
     private DoctorScheduleResponse mapToScheduleResponse(DoctorScheduleEntity schedule) {
         return new DoctorScheduleResponse(
                 schedule.getId(),
                 schedule.getDoctor().getId(),
-                schedule.getDaysOfWeek(),
+                schedule.getDayOfWeek(),
                 schedule.getStartTime(),
                 schedule.getEndTime(),
                 schedule.getMaxPatients(),
                 schedule.getAppointedPatients()
         );
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     private void checkAuthorizationForDoctor(DoctorEntity doctor) {
