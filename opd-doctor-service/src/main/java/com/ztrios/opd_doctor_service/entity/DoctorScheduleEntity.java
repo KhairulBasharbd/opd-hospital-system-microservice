@@ -1,6 +1,5 @@
 package com.ztrios.opd_doctor_service.entity;
 
-import com.ztrios.opd_doctor_service.enums.DaysOfWeek;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -35,7 +35,7 @@ public class DoctorScheduleEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week")
-    private DaysOfWeek daysOfWeek;
+    private DayOfWeek DayOfWeek;
 
     @Column(name = "start_time")
     private LocalTime startTime;
