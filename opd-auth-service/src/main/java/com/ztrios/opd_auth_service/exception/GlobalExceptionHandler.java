@@ -1,6 +1,5 @@
 package com.ztrios.opd_auth_service.exception;
 
-
 import com.ztrios.opd_auth_service.exception.custom.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,14 +11,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ControllerAdvice
-public class GlobalExceptionHandler  {
-
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Object> handleConflict(UserAlreadyExistsException ex) {
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
-
 
     @ExceptionHandler(OAuthProviderNotSupportedException.class)
     public ResponseEntity<Object> handleProviderNotSupported(OAuthProviderNotSupportedException ex) {
@@ -48,10 +45,10 @@ public class GlobalExceptionHandler  {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneric(Exception ex) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred");
+        // Log the actual exception for debugging
+        ex.printStackTrace();
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred: " + ex.getMessage());
     }
-
-
 
     private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -61,6 +58,5 @@ public class GlobalExceptionHandler  {
         body.put("message", message);
         return new ResponseEntity<>(body, status);
     }
-
 
 }

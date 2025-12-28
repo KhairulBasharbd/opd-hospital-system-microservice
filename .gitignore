@@ -1,0 +1,34 @@
+# Environment files
+.env
+*.env
+.env.*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Build outputs
+build/
+bin/
+target/
+out/
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.swp
+*~
