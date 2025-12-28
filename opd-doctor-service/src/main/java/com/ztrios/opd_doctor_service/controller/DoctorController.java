@@ -1,13 +1,18 @@
 package com.ztrios.opd_doctor_service.controller;
 
 import com.ztrios.opd_doctor_service.dto.*;
+import com.ztrios.opd_doctor_service.enums.*;
+
 import com.ztrios.opd_doctor_service.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,11 +47,24 @@ public class DoctorController {
 
         UUID createdBy = UUID.fromString(userId);
 
-        log.info("🚀 X-User-Id : "+userId);
-        log.info("🚀 X-User-Role : "+role);
-
         return ResponseEntity.ok(doctorService.getAllDoctors());
     }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<DoctorAvailabilityResponse>> getAvailableDoctors(@RequestParam("date")@DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate date,
+                                                                    @RequestParam("specialization") Specialization specialization){
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+
+        log.info("Fetching doctors for date={} ({}) and specialization={}",
+                date, dayOfWeek, specialization);
+
+        return ResponseEntity.ok(
+                doctorService.getAvailableDoctors(dayOfWeek, specialization)
+        );
+
+    }
+
+
 
     @GetMapping("/{id}")
 //    @PreAuthorize("hasRole('ADMIN')")
@@ -67,37 +85,6 @@ public class DoctorController {
         return ResponseEntity.noContent().build();
     }
 
-    // Schedule Management (Admin or Doctor)
-    @PostMapping("/{doctorId}/schedules")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<DoctorScheduleResponse> createSchedule(@PathVariable UUID doctorId, @RequestBody CreateDoctorScheduleRequest request) {
-        return new ResponseEntity<>(doctorService.createSchedule(doctorId, request), HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{doctorId}/schedules")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'PATIENT')") // Patients might view availability
-    public ResponseEntity<List<DoctorScheduleResponse>> getSchedulesByDoctorId(@PathVariable UUID doctorId) {
-        return ResponseEntity.ok(doctorService.getSchedulesByDoctorId(doctorId));
-    }
-
-    @GetMapping("/schedules/{scheduleId}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'PATIENT')")
-    public ResponseEntity<DoctorScheduleResponse> getScheduleById(@PathVariable UUID scheduleId) {
-        return ResponseEntity.ok(doctorService.getScheduleById(scheduleId));
-    }
-
-    @PutMapping("/schedules/{scheduleId}")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<DoctorScheduleResponse> updateSchedule(@PathVariable UUID scheduleId, @RequestBody CreateDoctorScheduleRequest request) {
-        return ResponseEntity.ok(doctorService.updateSchedule(scheduleId, request));
-    }
-
-    @DeleteMapping("/schedules/{scheduleId}")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<Void> deleteSchedule(@PathVariable UUID scheduleId) {
-        doctorService.deleteSchedule(scheduleId);
-        return ResponseEntity.noContent().build();
-    }
 
     // Placeholder for current user ID
     private UUID getCurrentUserId() {
