@@ -92,6 +92,13 @@ public class AppointmentService {
 
 //        kafkaTemplate.send("APPOINTMENT_CONFIRMED",
 //                new AppointmentConfirmedEvent(appointmentId));
+
+        eventProducer.publishAppointmentConfirmed(
+                new AppointmentConfirmedEvent(
+                        appt.getId()
+                )
+        );
+
     }
 }
 
