@@ -8,11 +8,11 @@ import java.util.UUID;
 
 public record AppointmentResponse(UUID appointmentId,
 
-                                  UUID doctorId,
-                                  UUID scheduleId,
-                                  UUID patientUserId,
-                                  LocalDate appointmentDate,
-                                  Instant createdAt,
+//                                  UUID doctorId,
+//                                  UUID scheduleId,
+//                                  UUID patientUserId,
+//                                  LocalDate appointmentDate,
+//                                  Instant createdAt,
 
                                   AppointmentStatus status,
                                   String serialNo,
