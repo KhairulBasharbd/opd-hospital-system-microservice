@@ -6,6 +6,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 
-public record BookAppointmentRequest(UUID doctorId, UUID ScheduleId, LocalDate date) {
+public record BookAppointmentRequest(UUID doctorId, UUID scheduleId, LocalDate date) {
 
 }
