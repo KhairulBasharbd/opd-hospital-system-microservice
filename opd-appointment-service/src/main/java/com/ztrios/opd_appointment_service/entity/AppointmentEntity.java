@@ -50,8 +50,8 @@ public class AppointmentEntity {
     private AppointmentStatus status;
 
 
-    @Column(name = "serial_no",nullable = false, unique = true)
-    private String serialNo;
+    @Column(name = "serial_no",nullable = false)
+    private Long serialNo;
 
 
     @CreatedDate
