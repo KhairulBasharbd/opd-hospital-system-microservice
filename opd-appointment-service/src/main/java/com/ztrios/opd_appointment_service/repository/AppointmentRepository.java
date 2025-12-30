@@ -11,6 +11,6 @@ import java.util.UUID;
 public interface AppointmentRepository extends JpaRepository<AppointmentEntity, UUID> {
 
     boolean existsByDoctorIdAndScheduleId(UUID doctorId, UUID scheduleId);
-    Optional<AppointmentEntity> findByAppointmentSerialNo(String serialNo);
+    Optional<AppointmentEntity> findBySerialNo(String serialNo);
 
 }
