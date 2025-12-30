@@ -33,10 +33,38 @@ services:
       - "5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - opd-net
     depends_on:
       - postgres
+    networks:
+      - opd-net
+
+  redis:
+    image: redis:7
+    container_name: opd-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - opd-net
+
+  kafka:
+    image: apache/kafka:4.0.0
+    container_name: opd-kafka
+    ports:
+      - "9092:9092"
+    networks:
+      - opd-net
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_CLUSTER_ID: opd-cluster-1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@opd-kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka_data:/var/lib/kafka/data
 
 networks:
   opd-net:
@@ -45,3 +73,4 @@ volumes:
   postgres_data:
   mongo_data:
   pgadmin_data:
+  kafka_data:
