@@ -10,14 +10,17 @@ import com.ztrios.opd_appointment_service.exception.custom.SlotNotAvailableExcep
 import com.ztrios.opd_appointment_service.repository.AppointmentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AppointmentService {
 
     private final AppointmentRepository repository;
@@ -29,10 +32,12 @@ public class AppointmentService {
 
 
     public AppointmentResponse bookAppointment(UUID patientId,
-                                               UUID doctorId,
-                                               UUID scheduleId,
                                                BookAppointmentRequest request) {
 
+        UUID doctorId = request.doctorId();
+        UUID scheduleId = request.scheduleId();
+
+        log.info("In Service ID {}, and DoctorId {}, Date {}", patientId, request.doctorId(), request.date());
 
         if (!doctorClient.isScheduleAvailable(doctorId, scheduleId, request.date())) {
             throw new SlotNotAvailableException("Schedule isn't available for Booking appointment!");
@@ -51,7 +56,8 @@ public class AppointmentService {
                         .scheduleId(scheduleId)
                         .appointmentDate(request.date())
                         .status(AppointmentStatus.PENDING_PAYMENT)
-                        .serialNo("1")
+                        .serialNo(Long.getLong("1"))
+                        .createdAt(Instant.now())
                         .build()
         );
 
@@ -59,6 +65,9 @@ public class AppointmentService {
         BillingServiceResponse billing = billingClient.createInvoice(
                 new BillingServiceRequest(appointment.getId(), patientId, doctorId)
         );
+
+        //BillingServiceResponse billing = new BillingServiceResponse("INV-2025-001","example-pay-link.com/INV-2025-001");
+
 
 
 //        kafkaTemplate.send("APPOINTMENT_CREATED",

@@ -19,7 +19,7 @@ public class SlotLockService {
     public boolean lockSlot(UUID doctorId, UUID scheduleId) {
         String key = "slot:" + doctorId + ":" + scheduleId;
         Boolean success = redisTemplate.opsForValue()
-                .setIfAbsent(key, "LOCKED", Duration.ofMinutes(15));
+                .setIfAbsent(key, "LOCKED", Duration.ofMinutes(4));
         return Boolean.TRUE.equals(success);
     }
 
