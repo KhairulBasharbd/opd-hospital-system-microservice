@@ -83,6 +83,7 @@ public class AppointmentService {
     }
 
 
+    // Called after consuming payment confirmed event
     public void confirmAppointment(UUID appointmentId) {
         AppointmentEntity appt = repository.findById(appointmentId).orElseThrow(() -> new AppointmentNotFoundException("Appointment not found"));
 
