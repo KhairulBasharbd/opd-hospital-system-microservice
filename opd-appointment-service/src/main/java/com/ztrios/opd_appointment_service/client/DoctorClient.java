@@ -12,9 +12,12 @@ import java.util.UUID;
 @FeignClient(name = "opd-doctor-service")
 public interface DoctorClient {
 
-    @GetMapping("/internal/doctors/{doctorId}/schedules/{scheduleId}/availability")
+    @GetMapping("/internal/doctors/{doctorId}/schedules/{scheduleId}/{serialNo}/availability")
     boolean isScheduleAvailable(@PathVariable UUID doctorId,
-                              @PathVariable UUID scheduleId,
-                              @RequestParam LocalDate date);
+                                @PathVariable UUID scheduleId,
+                                @PathVariable  Integer lastSerialNo,
+                                @RequestParam LocalDate date
+
+    );
 
 }

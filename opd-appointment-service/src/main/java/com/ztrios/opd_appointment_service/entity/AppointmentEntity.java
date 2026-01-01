@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "appointments", uniqueConstraints = {@UniqueConstraint(columnNames = {"patient_id","doctor_id","Schedule_id"})})
+@Table(name = "appointments", uniqueConstraints = {@UniqueConstraint(columnNames = {"patient_id","doctor_id","Schedule_id","serial_no"})})
 @Data
 @Builder
 @NoArgsConstructor
@@ -51,7 +51,7 @@ public class AppointmentEntity {
 
 
     @Column(name = "serial_no",nullable = false)
-    private Long serialNo;
+    private Integer serialNo;
 
 
     @CreatedDate

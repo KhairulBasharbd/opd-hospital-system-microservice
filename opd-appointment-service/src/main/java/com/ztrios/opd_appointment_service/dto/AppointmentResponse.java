@@ -15,6 +15,6 @@ public record AppointmentResponse(UUID appointmentId,
 //                                  Instant createdAt,
 
                                   AppointmentStatus status,
-                                  Long serialNo,
+                                  Integer serialNo,
                                   String paymentLink ) {
 }

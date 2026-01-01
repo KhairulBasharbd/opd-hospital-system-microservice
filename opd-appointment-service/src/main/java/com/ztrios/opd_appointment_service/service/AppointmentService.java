@@ -37,17 +37,19 @@ public class AppointmentService {
         UUID doctorId = request.doctorId();
         UUID scheduleId = request.scheduleId();
 
-        log.info("In Service ID {}, and DoctorId {}, Date {}", patientId, request.doctorId(), request.date());
+        Integer lastSerialNo = repository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(request.date(),doctorId, scheduleId);
 
-        if (!doctorClient.isScheduleAvailable(doctorId, scheduleId, request.date())) {
-            throw new SlotNotAvailableException("Schedule isn't available for Booking appointment!");
+
+        log.info("In Service ID {}, and DoctorId {}, Date {}, lastSerialNo {}", patientId, request.doctorId(), request.date(), lastSerialNo);
+
+        if (!doctorClient.isScheduleAvailable(doctorId, scheduleId, lastSerialNo, request.date())) {
+            throw new SlotNotAvailableException("Doctor Schedule isn't available for Booking appointment!");
         }
 
 
         if (!lockService.lockSlot(doctorId, scheduleId)) {
             throw new SlotNotAvailableException("Slot is already locked!");
         }
-
 
         AppointmentEntity appointment = repository.save(
                 AppointmentEntity.builder()
@@ -56,22 +58,19 @@ public class AppointmentService {
                         .scheduleId(scheduleId)
                         .appointmentDate(request.date())
                         .status(AppointmentStatus.PENDING_PAYMENT)
-                        .serialNo(Long.getLong("1"))
+                        .serialNo(lastSerialNo + 1)
                         .createdAt(Instant.now())
                         .build()
         );
 
 
-        BillingServiceResponse billing = billingClient.createInvoice(
-                new BillingServiceRequest(appointment.getId(), patientId, doctorId)
-        );
+//        BillingServiceResponse billing = billingClient.createInvoice(
+//                new BillingServiceRequest(appointment.getId(), patientId, doctorId)
+//        );
 
-        //BillingServiceResponse billing = new BillingServiceResponse("INV-2025-001","example-pay-link.com/INV-2025-001");
+        BillingServiceResponse billing = new BillingServiceResponse("INV-2025-001","example-pay-link.com/INV-2025-001");
 
 
-
-//        kafkaTemplate.send("APPOINTMENT_CREATED",
-//                new AppointmentCreatedEvent(appointment.getId(), patientId));
 
         // 5. Async notification event
         eventProducer.publishAppointmentCreated(
@@ -99,9 +98,6 @@ public class AppointmentService {
 
         appt.setStatus(AppointmentStatus.CONFIRMED);
 
-
-//        kafkaTemplate.send("APPOINTMENT_CONFIRMED",
-//                new AppointmentConfirmedEvent(appointmentId));
 
         eventProducer.publishAppointmentConfirmed(
                 new AppointmentConfirmedEvent(
