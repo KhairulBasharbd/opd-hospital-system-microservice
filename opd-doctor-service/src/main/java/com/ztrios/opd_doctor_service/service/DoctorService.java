@@ -1,11 +1,12 @@
 package com.ztrios.opd_doctor_service.service;
 
 
+import com.ztrios.opd_doctor_service.exception.custom.DoctorNotFoundException;
+import com.ztrios.opd_doctor_service.exception.custom.UnauthorizedException;
 import com.ztrios.opd_doctor_service.repository.*;
 import com.ztrios.opd_doctor_service.dto.*;
 import com.ztrios.opd_doctor_service.enums.*;
 import com.ztrios.opd_doctor_service.entity.*;
-import com.ztrios.opd_doctor_service.exception.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
