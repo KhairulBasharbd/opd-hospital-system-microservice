@@ -1,4 +1,4 @@
-package com.ztrios.opd_doctor_service.exception;
+package com.ztrios.opd_doctor_service.exception.custom;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
