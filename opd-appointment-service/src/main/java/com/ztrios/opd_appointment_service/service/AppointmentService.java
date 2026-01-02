@@ -11,7 +11,6 @@ import com.ztrios.opd_appointment_service.repository.AppointmentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -27,7 +26,6 @@ public class AppointmentService {
     private final DoctorClient doctorClient;
     private final BillingClient billingClient;
     private final SlotLockService lockService;
-    //private final KafkaTemplate<String, Object> kafkaTemplate;
     private final AppointmentEventProducer eventProducer;
 
 
