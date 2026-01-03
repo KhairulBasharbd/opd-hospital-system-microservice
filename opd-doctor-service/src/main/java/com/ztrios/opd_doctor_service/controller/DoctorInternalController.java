@@ -23,7 +23,6 @@ public class DoctorInternalController {
             @PathVariable UUID doctorId,
             @PathVariable UUID scheduleId,
             @PathVariable Integer serialNo,
-//            @RequestParam LocalDate appointmentDate
             @RequestParam @DateTimeFormat(pattern = "M/d/yy") LocalDate appointmentDate
     ) {
         boolean available = availabilityService.isScheduleAvailable(
