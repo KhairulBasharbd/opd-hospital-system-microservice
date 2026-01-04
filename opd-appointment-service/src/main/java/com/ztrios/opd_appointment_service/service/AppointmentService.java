@@ -40,7 +40,9 @@ public class AppointmentService {
 
         log.info("In Service ID {}, and DoctorId {}, Date {}, lastSerialNo {}", patientId, request.doctorId(), request.date(), lastSerialNo);
 
-        if (!doctorClient.isScheduleAvailable(doctorId, scheduleId, lastSerialNo, request.date())) {
+        Integer newSerialNo = lastSerialNo + 1;
+
+        if (!doctorClient.isScheduleAvailable(doctorId, scheduleId, newSerialNo , request.date())) {
             throw new SlotNotAvailableException("Doctor Schedule isn't available for Booking appointment!");
         }
 
