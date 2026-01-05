@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "opd-billing-service", configuration = BillingFeignConfig.class)
 public interface BillingClient {
 
-    @PostMapping("/internal/billing/invoices")
+    @PostMapping("/api/billing/invoice")
     BillingServiceResponse createInvoice(@RequestBody BillingServiceRequest request);
 
 }

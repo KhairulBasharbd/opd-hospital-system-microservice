@@ -7,6 +7,7 @@ import com.ztrios.opd_appointment_service.entity.AppointmentEntity;
 import com.ztrios.opd_appointment_service.enums.AppointmentStatus;
 import com.ztrios.opd_appointment_service.exception.custom.AppointmentNotFoundException;
 import com.ztrios.opd_appointment_service.exception.custom.SlotNotAvailableException;
+import com.ztrios.opd_appointment_service.kafka.producer.AppointmentEventProducer;
 import com.ztrios.opd_appointment_service.repository.AppointmentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class AppointmentService {
         UUID doctorId = request.doctorId();
         UUID scheduleId = request.scheduleId();
 
-        Integer lastSerialNo = repository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(request.date(),doctorId, scheduleId);
+        Integer lastSerialNo = repository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(request.date(),doctorId, scheduleId, AppointmentStatus.CONFIRMED);
 
 
         log.info("In Service ID {}, and DoctorId {}, Date {}, lastSerialNo {}", patientId, request.doctorId(), request.date(), lastSerialNo);
@@ -47,9 +48,9 @@ public class AppointmentService {
         }
 
 
-        if (!lockService.lockSlot(doctorId, scheduleId)) {
-            throw new SlotNotAvailableException("Slot is already locked!");
-        }
+//        if (!lockService.acquireBookingLock(doctorId, scheduleId, request.date())) {
+//            throw new SlotNotAvailableException("Booking in progress. Try again.!!");
+//        }
 
         AppointmentEntity appointment = repository.save(
                 AppointmentEntity.builder()
@@ -58,7 +59,6 @@ public class AppointmentService {
                         .scheduleId(scheduleId)
                         .appointmentDate(request.date())
                         .status(AppointmentStatus.PENDING_PAYMENT)
-                        .serialNo(lastSerialNo + 1)
                         .createdAt(Instant.now())
                         .build()
         );
@@ -85,13 +85,12 @@ public class AppointmentService {
         return new AppointmentResponse(
                 appointment.getId(),
                 appointment.getStatus(),
-                appointment.getSerialNo(),
                 billing.paymentLink()
         );
     }
 
 
-    // Called after consuming payment confirmed event
+    // Called after consuming payment confirmed event generated from billing service
     public void confirmAppointment(UUID appointmentId) {
         AppointmentEntity appt = repository.findById(appointmentId).orElseThrow(() -> new AppointmentNotFoundException("Appointment not found"));
 

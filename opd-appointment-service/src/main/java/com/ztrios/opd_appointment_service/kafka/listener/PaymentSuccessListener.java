@@ -1,4 +1,4 @@
-package com.ztrios.opd_appointment_service.listener;
+package com.ztrios.opd_appointment_service.kafka.listener;
 
 
 import com.ztrios.opd_appointment_service.dto.PaymentSuccessEvent;

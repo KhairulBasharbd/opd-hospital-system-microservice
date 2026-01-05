@@ -1,6 +1,7 @@
 package com.ztrios.opd_appointment_service.repository;
 
 import com.ztrios.opd_appointment_service.entity.AppointmentEntity;
+import com.ztrios.opd_appointment_service.enums.AppointmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,10 +22,12 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
             "FROM AppointmentEntity a " +
             "WHERE a.appointmentDate = :date " +
             "AND a.doctorId = :doctorId " +
-            "AND a.scheduleId = :scheduleId")
+            "AND a.scheduleId = :scheduleId " +
+            "AND a.status = :status")
     Integer findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(
             @Param("date") LocalDate date,
             @Param("doctorId") UUID doctorId,
-            @Param("scheduleId") UUID scheduleId
+            @Param("scheduleId") UUID scheduleId,
+            @Param ("status") AppointmentStatus status
     );
 }

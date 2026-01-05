@@ -1,4 +1,4 @@
-package com.ztrios.opd_appointment_service.service;
+package com.ztrios.opd_appointment_service.kafka.producer;
 
 import com.ztrios.opd_appointment_service.dto.AppointmentConfirmedEvent;
 import com.ztrios.opd_appointment_service.dto.AppointmentCreatedEvent;
