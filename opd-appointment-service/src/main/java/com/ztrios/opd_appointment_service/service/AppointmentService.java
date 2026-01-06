@@ -64,23 +64,23 @@ public class AppointmentService {
         );
 
 
-//        BillingServiceResponse billing = billingClient.createInvoice(
-//                new BillingServiceRequest(appointment.getId(), patientId, doctorId)
-//        );
-
-        BillingServiceResponse billing = new BillingServiceResponse("INV-2025-001","example-pay-link.com/INV-2025-001");
-
-
-
-        // 5. Async notification event
-        eventProducer.publishAppointmentCreated(
-                new AppointmentCreatedEvent(
-                        appointment.getId(),
-                        patientId
-//                        doctorId,
-//                        appointment.getAppointmentDate()
-                )
+        BillingServiceResponse billing = billingClient.createInvoice(
+                new BillingServiceRequest(appointment.getId(), patientId, doctorId)
         );
+
+        //BillingServiceResponse billing = new BillingServiceResponse("INV-2025-001","example-pay-link.com/INV-2025-001");
+
+
+
+//        //  Async notification event
+//        eventProducer.publishAppointmentCreated(
+//                new AppointmentCreatedEvent(
+//                        appointment.getId(),
+//                        patientId
+////                        doctorId,
+////                        appointment.getAppointmentDate()
+//                )
+//        );
 
         return new AppointmentResponse(
                 appointment.getId(),
@@ -92,17 +92,28 @@ public class AppointmentService {
 
     // Called after consuming payment confirmed event generated from billing service
     public void confirmAppointment(UUID appointmentId) {
-        AppointmentEntity appt = repository.findById(appointmentId).orElseThrow(() -> new AppointmentNotFoundException("Appointment not found"));
+        AppointmentEntity appointment = repository.findById(appointmentId).orElseThrow(() -> new AppointmentNotFoundException("Appointment not found"));
 
 
-        appt.setStatus(AppointmentStatus.CONFIRMED);
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
 
+        Integer lastSerialNo = repository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(appointment.getAppointmentDate(),appointment.getDoctorId(), appointment.getScheduleId(), AppointmentStatus.CONFIRMED);
+        Integer newSerialNo = lastSerialNo + 1;
 
-        eventProducer.publishAppointmentConfirmed(
-                new AppointmentConfirmedEvent(
-                        appt.getId()
-                )
-        );
+        appointment.setSerialNo(newSerialNo);
+
+        repository.save(appointment);
+
+        //  Async notification event
+//        eventProducer.publishAppointmentConfirmed(
+//                new AppointmentConfirmedEvent(
+//                        appointment.getId(),
+//                        appointment.getDoctorId(),
+//                        appointment.getScheduleId(),
+//                        appointment.getAppointmentDate(),
+//                        appointment.getSerialNo()
+//                )
+//        );
 
     }
 }
