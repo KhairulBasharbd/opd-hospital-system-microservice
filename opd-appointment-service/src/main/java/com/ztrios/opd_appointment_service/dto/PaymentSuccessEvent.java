@@ -2,10 +2,12 @@ package com.ztrios.opd_appointment_service.dto;
 
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public record PaymentSuccessEvent(
         UUID appointmentId,
-        String invoiceId,
-        BigDecimal amountPaid
+        UUID invoiceId,
+        BigDecimal amountPaid,
+        Instant paidAt
 ) {}

@@ -1,5 +1,7 @@
 package com.ztrios.opd_appointment_service.dto;
 
-public record BillingServiceResponse(String invoiceId,
+import java.util.UUID;
+
+public record BillingServiceResponse(UUID invoiceId,
                                      String paymentLink) {
 }
