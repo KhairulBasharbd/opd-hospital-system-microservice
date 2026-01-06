@@ -9,10 +9,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface InvoiceDocumentRepository extends MongoRepository<InvoiceDocument, String> {
+public interface InvoiceDocumentRepository extends MongoRepository<InvoiceDocument, UUID> {
 
     Optional<InvoiceDocument> findByAppointmentId(UUID appointmentId);
 
     List<InvoiceDocument> findByPatientUserId(UUID patientUserId);
+
+    Optional<InvoiceDocument> findById(UUID invoiceId);
+
 
 }

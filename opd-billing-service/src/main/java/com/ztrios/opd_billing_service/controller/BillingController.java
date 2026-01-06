@@ -31,7 +31,7 @@ public class BillingController {
     /** Simulated payment gateway */
     @PostMapping("/pay/{invoiceId}")
     public ResponseEntity<?> pay(
-            @PathVariable String invoiceId,
+            @PathVariable UUID invoiceId,
             @RequestBody PaymentRequest request
     ) {
         billingService.payInvoice(invoiceId, request);

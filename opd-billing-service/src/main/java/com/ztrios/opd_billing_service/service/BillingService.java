@@ -1,10 +1,8 @@
 package com.ztrios.opd_billing_service.service;
 
+import com.ztrios.opd_billing_service.client.DoctorClient;
+import com.ztrios.opd_billing_service.dto.*;
 import com.ztrios.opd_billing_service.repository.InvoiceDocumentRepository;
-import com.ztrios.opd_billing_service.dto.BillingServiceRequest;
-import com.ztrios.opd_billing_service.dto.BillingServiceResponse;
-import com.ztrios.opd_billing_service.dto.PaymentRequest;
-import com.ztrios.opd_billing_service.dto.PaymentSuccessEvent;
 import com.ztrios.opd_billing_service.entity.InvoiceDocument;
 import com.ztrios.opd_billing_service.entity.PaymentDetails;
 import com.ztrios.opd_billing_service.enums.InvoiceStatus;
@@ -16,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -28,9 +27,10 @@ public class BillingService {
 
     private final InvoiceDocumentRepository invoiceRepository;
     private final BillingEventProducer eventProducer;
+    private final DoctorClient doctorClient;
 
-//    private static final Double TAX_RATE = 0.05; // 5% tax
-//    private static final Double DISCOUNT = 0.0; // Default no discount
+    private static final BigDecimal TAX_RATE = new BigDecimal(0.05); // 5% tax
+    private static final BigDecimal DISCOUNT = new BigDecimal(0.0);
 
 
     //    Auto invoice generation (SYNC)
@@ -41,17 +41,15 @@ public class BillingService {
                     throw new PaymentAlreadyDoneException("Invoice already exists");
                 });
 
-        BigDecimal baseFee = BigDecimal.valueOf(500);
-        BigDecimal tax = BigDecimal.valueOf(50);
 
-//        // Fetch external details
-//        DoctorClient.DoctorDetailsResponse doctorDetails = doctorClient.getDoctorDetails(request.doctorId());
+
+        // Fetch external details
+        DoctorResponse doctorDetails = doctorClient.getDoctorDetails(request.doctorId());
 //        AuthClient.PatientDetailsResponse patientDetails = authClient.getPatientDetails(request.patientId());
-//
+
 //        // Calculate amounts
-//        Double baseFee = doctorDetails.consultationFee();
-//        Double tax = baseFee * TAX_RATE;
-//        Double totalAmount = baseFee + tax - DISCOUNT;
+        BigDecimal baseFee = doctorDetails.consultationFee();
+        BigDecimal tax = baseFee.multiply(TAX_RATE).setScale(2, RoundingMode.HALF_UP);
 
         InvoiceDocument invoice = invoiceRepository.save(
                 InvoiceDocument.builder()
@@ -59,23 +57,26 @@ public class BillingService {
                         .appointmentId(request.appointmentId())
                         .patientUserId(request.patientUserId())
                         .doctorId(request.doctorId())
+                        .doctorName("Kahirul Basar")
+                        .patientName("Juwel")
+                        .patientPhone("+8801716564325")
                         .baseFee(baseFee)
                         .tax(tax)
                         .discount(BigDecimal.ZERO)
-                        .totalAmount(baseFee.add(tax))
+                        .totalAmount(baseFee.add(tax).subtract(DISCOUNT))
                         .status(InvoiceStatus.UNPAID)
                         .createdAt(Instant.now())
                         .build()
         );
 
-        String paymentLink = "https://pay.opd.com/pay/" + invoice.getId();
+        String paymentLink = "localhost:8084/api/billing/pay/" + invoice.getId();
 
         return new BillingServiceResponse(invoice.getId(), paymentLink);
     }
 
 
     // Simulated payment callback
-    public void payInvoice(String invoiceId, PaymentRequest request) {
+    public void payInvoice(UUID invoiceId, PaymentRequest request) {
 
         InvoiceDocument invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new InvoiceNotFoundException("Invoice not found"));
@@ -86,7 +87,6 @@ public class BillingService {
 
         PaymentDetails savePayment = new PaymentDetails(invoice.getId(), request.paymentMethod(), UUID.randomUUID().toString(), invoice.getTotalAmount(), Instant.now() );
 
-        //invoiceRepository.save(InvoiceDocument.builder().payment(savePayment).build());
         invoice.setPayment(savePayment);
         invoice.setStatus(InvoiceStatus.PAID);
         invoiceRepository.save(invoice);
@@ -95,6 +95,7 @@ public class BillingService {
                 new PaymentSuccessEvent(
                         invoice.getAppointmentId(),
                         invoice.getId(),
+                        invoice.getTotalAmount(),
                         Instant.now()
                 )
         );
