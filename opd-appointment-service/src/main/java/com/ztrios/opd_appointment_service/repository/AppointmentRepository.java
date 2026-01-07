@@ -17,6 +17,7 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
     boolean existsByDoctorIdAndScheduleId(UUID doctorId, UUID scheduleId);
     Optional<AppointmentEntity> findBySerialNo(String serialNo);
 
+    boolean existsByPatientUserIdAndDoctorIdAndScheduleIdAndAppointmentDate(UUID patientUserId, UUID doctorId, UUID scheduleId, LocalDate appointmentDate);
 
     @Query("SELECT COALESCE(MAX(a.serialNo), 0) " +
             "FROM AppointmentEntity a " +

@@ -44,6 +44,10 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(DuplicateAppointmentException.class)
+    public ResponseEntity<Object> handleDuplicateAppointment(DuplicateAppointmentException ex){
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
 
 
 

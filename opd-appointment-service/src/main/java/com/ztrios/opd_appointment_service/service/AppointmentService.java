@@ -6,6 +6,7 @@ import com.ztrios.opd_appointment_service.dto.*;
 import com.ztrios.opd_appointment_service.entity.AppointmentEntity;
 import com.ztrios.opd_appointment_service.enums.AppointmentStatus;
 import com.ztrios.opd_appointment_service.exception.custom.AppointmentNotFoundException;
+import com.ztrios.opd_appointment_service.exception.custom.DuplicateAppointmentException;
 import com.ztrios.opd_appointment_service.exception.custom.SlotNotAvailableException;
 import com.ztrios.opd_appointment_service.kafka.producer.AppointmentEventProducer;
 import com.ztrios.opd_appointment_service.repository.AppointmentRepository;
@@ -23,24 +24,28 @@ import java.util.UUID;
 @Slf4j
 public class AppointmentService {
 
-    private final AppointmentRepository repository;
+    private final AppointmentRepository appointmentRepository;
     private final DoctorClient doctorClient;
     private final BillingClient billingClient;
     private final SlotLockService lockService;
     private final AppointmentEventProducer eventProducer;
 
 
-    public AppointmentResponse bookAppointment(UUID patientId,
-                                               BookAppointmentRequest request) {
+    public AppointmentResponse bookAppointment(UUID patientId, BookAppointmentRequest request) {
 
         UUID doctorId = request.doctorId();
         UUID scheduleId = request.scheduleId();
 
-        Integer lastSerialNo = repository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(request.date(),doctorId, scheduleId, AppointmentStatus.CONFIRMED);
+        log.info("In Service PatientID {}, and DoctorId {}, Date {}, scheduleId {}", patientId, doctorId, request.date(), scheduleId);
 
 
-        log.info("In Service ID {}, and DoctorId {}, Date {}, lastSerialNo {}", patientId, request.doctorId(), request.date(), lastSerialNo);
+//        Checking that does this patient already appointed a schedule of this doctor on a specific date ??
+        if (appointmentRepository.existsByPatientUserIdAndDoctorIdAndScheduleIdAndAppointmentDate( patientId, doctorId, scheduleId, request.date())) {
 
+            throw new DuplicateAppointmentException("An appointment with the same patient, doctor, schedule, and date already exists.");
+        }
+
+        Integer lastSerialNo = appointmentRepository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(request.date(),doctorId, scheduleId, AppointmentStatus.CONFIRMED);
         Integer newSerialNo = lastSerialNo + 1;
 
         if (!doctorClient.isScheduleAvailable(doctorId, scheduleId, newSerialNo , request.date())) {
@@ -52,7 +57,9 @@ public class AppointmentService {
 //            throw new SlotNotAvailableException("Booking in progress. Try again.!!");
 //        }
 
-        AppointmentEntity appointment = repository.save(
+
+
+        AppointmentEntity appointment = appointmentRepository.save(
                 AppointmentEntity.builder()
                         .patientUserId(patientId)
                         .doctorId(doctorId)
@@ -72,15 +79,15 @@ public class AppointmentService {
 
 
 
-//        //  Async notification event
-//        eventProducer.publishAppointmentCreated(
-//                new AppointmentCreatedEvent(
-//                        appointment.getId(),
-//                        patientId
-////                        doctorId,
-////                        appointment.getAppointmentDate()
-//                )
-//        );
+        //  Async notification event
+        eventProducer.publishAppointmentCreated(
+                new AppointmentCreatedEvent(
+                        appointment.getId(),
+                        patientId
+//                        doctorId,
+//                        appointment.getAppointmentDate()
+                )
+        );
 
         return new AppointmentResponse(
                 appointment.getId(),
@@ -92,28 +99,28 @@ public class AppointmentService {
 
     // Called after consuming payment confirmed event generated from billing service
     public void confirmAppointment(UUID appointmentId) {
-        AppointmentEntity appointment = repository.findById(appointmentId).orElseThrow(() -> new AppointmentNotFoundException("Appointment not found"));
+        AppointmentEntity appointment = appointmentRepository.findById(appointmentId).orElseThrow(() -> new AppointmentNotFoundException("Appointment not found"));
 
 
         appointment.setStatus(AppointmentStatus.CONFIRMED);
 
-        Integer lastSerialNo = repository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(appointment.getAppointmentDate(),appointment.getDoctorId(), appointment.getScheduleId(), AppointmentStatus.CONFIRMED);
+        Integer lastSerialNo = appointmentRepository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(appointment.getAppointmentDate(),appointment.getDoctorId(), appointment.getScheduleId(), AppointmentStatus.CONFIRMED);
         Integer newSerialNo = lastSerialNo + 1;
 
         appointment.setSerialNo(newSerialNo);
 
-        repository.save(appointment);
+        appointmentRepository.save(appointment);
 
         //  Async notification event
-//        eventProducer.publishAppointmentConfirmed(
-//                new AppointmentConfirmedEvent(
-//                        appointment.getId(),
-//                        appointment.getDoctorId(),
-//                        appointment.getScheduleId(),
-//                        appointment.getAppointmentDate(),
-//                        appointment.getSerialNo()
-//                )
-//        );
+        eventProducer.publishAppointmentConfirmed(
+                new AppointmentConfirmedEvent(
+                        appointment.getId(),
+                        appointment.getDoctorId(),
+                        appointment.getScheduleId(),
+                        appointment.getAppointmentDate(),
+                        appointment.getSerialNo()
+                )
+        );
 
     }
 }
