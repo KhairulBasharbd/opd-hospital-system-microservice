@@ -56,31 +56,34 @@ services:
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_CLUSTER_ID: opd-cluster-1
+
       KAFKA_PROCESS_ROLES: controller,broker
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@opd-kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
-      # Auto-create topics
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
+      # LISTENERS
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://opd-kafka:29092,EXTERNAL://localhost:9092
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - kafka_data:/var/lib/kafka/data
 
+
   redpanda-console:
-    image: redpandadata/console:latest
+    image: redpandadata/console:v3.3.2
     container_name: opd-redpanda-console
-    ports:
-      - "8090:8080"
-    environment:
-      KAFKA_BROKERS: kafka:9092
-    networks:
-      - opd-net
     depends_on:
       - kafka
+    ports:
+      - "8089:8080"
+    environment:
+      KAFKA_BROKERS: opd-kafka:29092
+    networks:
+      - opd-net
 
 networks:
   opd-net:
