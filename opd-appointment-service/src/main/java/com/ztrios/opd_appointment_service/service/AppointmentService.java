@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
@@ -72,7 +73,7 @@ public class AppointmentService {
 
 
         BillingServiceResponse billing = billingClient.createInvoice(
-                new BillingServiceRequest(appointment.getId(), patientId, doctorId)
+                new BillingServiceRequest(appointment.getId(), patientId, doctorId, appointment.getScheduleId(), appointment.getAppointmentDate())
         );
 
         //BillingServiceResponse billing = new BillingServiceResponse("INV-2025-001","example-pay-link.com/INV-2025-001");
@@ -97,6 +98,12 @@ public class AppointmentService {
     }
 
 
+    public Integer countAppointments(UUID doctorId, UUID scheduleId, LocalDate date, AppointmentStatus status){
+       return  appointmentRepository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(date, doctorId, scheduleId, AppointmentStatus.CONFIRMED);
+
+    }
+
+
     // Called after consuming payment confirmed event generated from billing service
     public void confirmAppointment(UUID appointmentId) {
         AppointmentEntity appointment = appointmentRepository.findById(appointmentId).orElseThrow(() -> new AppointmentNotFoundException("Appointment not found"));
@@ -104,7 +111,10 @@ public class AppointmentService {
 
         appointment.setStatus(AppointmentStatus.CONFIRMED);
 
-        Integer lastSerialNo = appointmentRepository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(appointment.getAppointmentDate(),appointment.getDoctorId(), appointment.getScheduleId(), AppointmentStatus.CONFIRMED);
+        //Integer lastSerialNo = appointmentRepository.findMaxSerialNoByAppointmentDateAndDoctorIdAndScheduleId(appointment.getAppointmentDate(),appointment.getDoctorId(), appointment.getScheduleId(), AppointmentStatus.CONFIRMED);
+
+        Integer lastSerialNo = countAppointments(appointment.getDoctorId(), appointment.getScheduleId(), appointment.getAppointmentDate(), AppointmentStatus.CONFIRMED);
+
         Integer newSerialNo = lastSerialNo + 1;
 
         appointment.setSerialNo(newSerialNo);
