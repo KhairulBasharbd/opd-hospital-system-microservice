@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Document(collection = "invoices")
@@ -26,6 +27,8 @@ public class InvoiceDocument {
     private UUID appointmentId;
     private UUID patientUserId;
     private UUID doctorId;
+    private UUID scheduleId;
+    private LocalDate appointmentDate;
 
     private String doctorName;
     private String patientName;
