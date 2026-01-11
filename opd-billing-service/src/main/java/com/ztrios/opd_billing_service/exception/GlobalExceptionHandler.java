@@ -2,6 +2,7 @@ package com.ztrios.opd_billing_service.exception;
 
 import com.ztrios.opd_billing_service.exception.custom.InvoiceNotFoundException;
 import com.ztrios.opd_billing_service.exception.custom.PaymentAlreadyDoneException;
+import com.ztrios.opd_billing_service.exception.custom.TotalScheduleFullException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,6 +27,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(TotalScheduleFullException.class)
+    public ResponseEntity<?> handleAppointmentfullException(TotalScheduleFullException ex){
+
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
 
 //    @ExceptionHandler(Exception.class)
 //    public ResponseEntity<Object> handleGeneric(Exception ex) {
