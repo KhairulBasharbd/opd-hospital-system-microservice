@@ -1,4 +1,4 @@
-package com.ztrios.opd_appointment_service.dto;
+package com.ztrios.opd_appointment_service.dto.event;
 
 
 import java.math.BigDecimal;

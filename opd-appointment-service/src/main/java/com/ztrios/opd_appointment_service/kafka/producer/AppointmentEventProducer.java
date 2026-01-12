@@ -1,7 +1,7 @@
 package com.ztrios.opd_appointment_service.kafka.producer;
 
-import com.ztrios.opd_appointment_service.dto.AppointmentConfirmedEvent;
-import com.ztrios.opd_appointment_service.dto.AppointmentCreatedEvent;
+import com.ztrios.opd_appointment_service.dto.event.AppointmentConfirmedEvent;
+import com.ztrios.opd_appointment_service.dto.event.AppointmentCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -20,7 +20,7 @@ public class AppointmentEventProducer {
 
         log.info("📤 APPOINTMENT_CREATED published: {}", event.appointmentId());
 
-        kafkaTemplate.send("APPOINTMENT_CREATED", event);
+        kafkaTemplate.send("APPOINTMENT_CREATED",event.appointmentId().toString(), event);
     }
 
 
@@ -28,6 +28,6 @@ public class AppointmentEventProducer {
 
         log.info("📤 APPOINTMENT_CONFIRMED published: {}", event.appointmentId());
 
-        kafkaTemplate.send("APPOINTMENT_CONFIRMED", event);
+        kafkaTemplate.send("APPOINTMENT_CONFIRMED", event.appointmentId().toString(), event);
     }
 }

@@ -30,6 +30,10 @@ public class DoctorFeignErrorDecoder implements ErrorDecoder {
                     "Invalid request sent to Doctor Service"
             );
 
+            case 503 -> new DoctorServiceUnavailableException(
+                    "Doctor Service is unavailable"
+            );
+
             case 500 -> new DoctorServiceUnavailableException(
                     "Doctor Service internal error"
             );

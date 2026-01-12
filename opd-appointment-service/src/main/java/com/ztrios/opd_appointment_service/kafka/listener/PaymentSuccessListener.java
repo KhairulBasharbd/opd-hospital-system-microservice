@@ -1,11 +1,10 @@
 package com.ztrios.opd_appointment_service.kafka.listener;
 
 
-import com.ztrios.opd_appointment_service.dto.PaymentSuccessEvent;
+import com.ztrios.opd_appointment_service.dto.event.PaymentSuccessEvent;
 import com.ztrios.opd_appointment_service.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.extern.slf4j.XSlf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;

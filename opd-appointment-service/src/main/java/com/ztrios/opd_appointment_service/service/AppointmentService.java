@@ -1,8 +1,12 @@
 package com.ztrios.opd_appointment_service.service;
 
+import com.ztrios.opd_appointment_service.client.AuthClient;
 import com.ztrios.opd_appointment_service.client.BillingClient;
 import com.ztrios.opd_appointment_service.client.DoctorClient;
 import com.ztrios.opd_appointment_service.dto.*;
+import com.ztrios.opd_appointment_service.dto.event.AppointmentConfirmedEvent;
+import com.ztrios.opd_appointment_service.dto.event.AppointmentCreatedEvent;
+import com.ztrios.opd_appointment_service.dto.event.PatientSummary;
 import com.ztrios.opd_appointment_service.entity.AppointmentEntity;
 import com.ztrios.opd_appointment_service.enums.AppointmentStatus;
 import com.ztrios.opd_appointment_service.exception.custom.AppointmentNotFoundException;
@@ -28,6 +32,7 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorClient doctorClient;
     private final BillingClient billingClient;
+    private final AuthClient authClient;
     private final SlotLockService lockService;
     private final AppointmentEventProducer eventProducer;
 
@@ -76,19 +81,37 @@ public class AppointmentService {
                 new BillingServiceRequest(appointment.getId(), patientId, doctorId, appointment.getScheduleId(), appointment.getAppointmentDate())
         );
 
-        //BillingServiceResponse billing = new BillingServiceResponse("INV-2025-001","example-pay-link.com/INV-2025-001");
 
+// 🔹 Fetch external data
+        DoctorResponse doctor = doctorClient.getDoctorDetails(doctorId);
 
+        DoctorScheduleResponse schedule = doctorClient.getScheduleDetails(scheduleId);
 
-        //  Async notification event
-        eventProducer.publishAppointmentCreated(
+        PatientProfileDetails patient = authClient.getPatientSummary(patientId);
+
+        // 🔹 Produce event
+        AppointmentCreatedEvent event =
                 new AppointmentCreatedEvent(
+                        UUID.randomUUID(),
+                        Instant.now(),
                         appointment.getId(),
-                        patientId
-//                        doctorId,
-//                        appointment.getAppointmentDate()
-                )
-        );
+                        appointment.getAppointmentDate(),
+                        doctorId,
+                        "doctorName",
+                        doctor.consultationFee(),
+                        scheduleId,
+                        schedule.startTime(),
+                        schedule.endTime(),
+                        new PatientSummary(
+                                patientId,
+                                patient.email(),
+                                patient.phone(),
+                                patient.fullName()
+                        ),
+                        billing.paymentLink()
+                );
+
+        eventProducer.publishAppointmentCreated(event);
 
         return new AppointmentResponse(
                 appointment.getId(),
@@ -116,22 +139,39 @@ public class AppointmentService {
         Integer lastSerialNo = countAppointments(appointment.getDoctorId(), appointment.getScheduleId(), appointment.getAppointmentDate(), AppointmentStatus.CONFIRMED);
 
         Integer newSerialNo = lastSerialNo + 1;
-
         appointment.setSerialNo(newSerialNo);
 
         appointmentRepository.save(appointment);
 
-        //  Async notification event
-        eventProducer.publishAppointmentConfirmed(
-                new AppointmentConfirmedEvent(
-                        appointment.getId(),
-                        appointment.getDoctorId(),
-                        appointment.getScheduleId(),
-                        appointment.getAppointmentDate(),
-                        appointment.getSerialNo()
-                )
-        );
+// 🔹 Fetch required data again
+        DoctorResponse doctor = doctorClient.getDoctorDetails(appointment.getDoctorId());
 
+        DoctorScheduleResponse schedule = doctorClient.getScheduleDetails(appointment.getScheduleId());
+
+        PatientProfileDetails patient = authClient.getPatientSummary(appointment.getPatientUserId());
+
+        AppointmentConfirmedEvent event =
+                new AppointmentConfirmedEvent(
+                        UUID.randomUUID(),
+                        Instant.now(),
+                        appointment.getId(),
+                        appointment.getAppointmentDate(),
+                        appointment.getDoctorId(),
+                        "DoctorName",
+                        doctor.consultationFee(),
+                        appointment.getScheduleId(),
+                        schedule.startTime(),
+                        schedule.endTime(),
+                        new PatientSummary(
+                                appointment.getPatientUserId(),
+                                patient.email(),
+                                patient.phone(),
+                                patient.fullName()
+                        ),
+                        newSerialNo
+                );
+
+        eventProducer.publishAppointmentConfirmed(event);
     }
 }
 

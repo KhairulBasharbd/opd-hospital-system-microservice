@@ -29,13 +29,22 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(DoctorServiceUnavailableException.class)
-    public ResponseEntity<Object> handleDoctorServiceError(DoctorServiceUnavailableException ex) {
+
+    @ExceptionHandler({
+            DoctorServiceUnavailableException.class,
+            AuthServiceUnavailableException.class
+    })
+    public ResponseEntity<Object> handleDoctorServiceError(RuntimeException ex) {
         return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFound(UserNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
     @ExceptionHandler(BillingServiceException.class)
-    public ResponseEntity<Object> handleBillingService(BillingServiceException ex) {
+    public ResponseEntity<Object> handleBillingService( BillingServiceException ex) {
         return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 
