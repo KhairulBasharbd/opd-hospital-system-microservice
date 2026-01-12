@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 "/login",
                                 "/register/**",
                                 "/admin/exists",
+                                "/internal/**",
                                 "/oauth2/**",
                                 "/actuator/**")
                         .permitAll()
