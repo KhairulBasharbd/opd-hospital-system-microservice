@@ -1,8 +1,10 @@
 package com.ztrios.opd_notification_service.dto.event;
 
 
+import java.util.UUID;
+
 public record PatientSummary(
-        String id,
+        UUID id,
         String email,
         String phone,
         String fullName

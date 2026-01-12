@@ -1,0 +1,27 @@
+#spring:
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#
+#    consumer:
+#      group-id: notification-service
+#      auto-offset-reset: earliest
+#      enable-auto-commit: true
+#      auto-commit-interval: 1000ms
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#
+#      properties:
+#        # Very important - we DON'T use type headers
+#        spring.json.use.type.headers: false
+#
+#        # This is the most reliable way when headers are disabled
+#        spring.json.type.mapping: |
+#          APPOINTMENT_CREATED:com.ztrios.opd_notification_service.dto.event.AppointmentCreatedEvent,
+#          APPOINTMENT_CONFIRMED:com.ztrios.opd_notification_service.dto.event.AppointmentConfirmedEvent
+#
+#        # Security - only trust your own packages
+#        spring.json.trusted.packages: com.ztrios.opd_notification_service.dto.event,com.ztrios.opd_notification_service
+#
+#    listener:
+#      missing-topics-fatal: false
+#      ack-mode: record
