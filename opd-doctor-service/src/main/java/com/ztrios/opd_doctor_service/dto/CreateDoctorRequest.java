@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record CreateDoctorRequest(
                                   UUID userId,
+                                  String doctorName,
                                   String degree,
                                   Specialization specialization,
                                   Integer experienceYears,

@@ -1,6 +1,7 @@
 package com.ztrios.opd_billing_service.service;
 
 import com.ztrios.opd_billing_service.client.AppointmentClient;
+import com.ztrios.opd_billing_service.client.AuthClient;
 import com.ztrios.opd_billing_service.client.DoctorClient;
 import com.ztrios.opd_billing_service.dto.*;
 import com.ztrios.opd_billing_service.enums.AppointmentStatus;
@@ -32,6 +33,7 @@ public class BillingService {
     private final BillingEventProducer eventProducer;
     private final DoctorClient doctorClient;
     private final AppointmentClient appointmentClient;
+    private final AuthClient authClient;
 
     private static final BigDecimal TAX_RATE = new BigDecimal(0.05); // 5% tax
     private static final BigDecimal DISCOUNT = new BigDecimal(0.0);
@@ -49,7 +51,7 @@ public class BillingService {
 
         // Fetch external details
         DoctorResponse doctorDetails = doctorClient.getDoctorDetails(request.doctorId());
-//        AuthClient.PatientDetailsResponse patientDetails = authClient.getPatientDetails(request.patientId());
+        PatientProfileDetails patientDetails = authClient.getPatientSummary(request.patientUserId());
 
 //        // Calculate amounts
         BigDecimal baseFee = doctorDetails.consultationFee();
@@ -65,9 +67,9 @@ public class BillingService {
                         .doctorId(request.doctorId())
                         .scheduleId(request.scheduleId())
                         .appointmentDate(request.appointmentDate())
-                        .doctorName("Kahirul Basar")
-                        .patientName("Juwel")
-                        .patientPhone("+8801716564325")
+                        .doctorName(doctorDetails.doctorName())
+                        .patientName(patientDetails.fullName())
+                        .patientPhone(patientDetails.phone())
                         .baseFee(baseFee)
                         .tax(tax)
                         .discount(BigDecimal.ZERO)

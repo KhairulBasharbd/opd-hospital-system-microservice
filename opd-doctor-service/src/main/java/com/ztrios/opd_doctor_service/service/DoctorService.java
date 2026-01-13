@@ -28,6 +28,7 @@ public class DoctorService {
     public DoctorResponse createDoctor(CreateDoctorRequest request, UUID createdBy) {
         DoctorEntity doctor = new DoctorEntity();
         doctor.setUserId(request.userId());
+        doctor.setDoctorName(request.doctorName());
         doctor.setDegree(request.degree());
         doctor.setSpecialization(request.specialization());
         doctor.setExperienceYears(request.experienceYears());
@@ -98,6 +99,7 @@ public class DoctorService {
 //                doctor.getSchedules().stream().map(this::mapToScheduleResponse).collect(Collectors.toList()) : List.of();
         return new DoctorResponse(
                 doctor.getId(),
+                doctor.getDoctorName(),
                 doctor.getDegree(),
                 doctor.getSpecialization(),
                 doctor.getExperienceYears(),
@@ -107,8 +109,8 @@ public class DoctorService {
                 doctor.getBio(),
                 doctor.getCreatedBy(),
                 doctor.getCreatedAt()
-
         );
+
     }
 
     private DoctorAvailabilityResponse mapToDoctorAvailabilityResponse(DoctorEntity doctor) {

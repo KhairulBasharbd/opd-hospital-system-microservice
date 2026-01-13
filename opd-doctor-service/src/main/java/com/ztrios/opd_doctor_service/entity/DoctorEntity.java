@@ -34,6 +34,7 @@ public class DoctorEntity {
     @Column(nullable = false, unique = true)
     private UUID userId; // From Identity Service
 
+    private String doctorName;
 
     private String degree;
 
