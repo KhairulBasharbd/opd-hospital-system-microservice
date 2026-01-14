@@ -24,16 +24,15 @@ public class JwtUtil {
 
 
     @Bean
-    public ReactiveJwtDecoder jwtDecoder() {
-        SecretKey key = new SecretKeySpec(
-                jwtSecret.getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256"
-        );
+    public ReactiveJwtDecoder reactiveJwtDecoder() {
+        SecretKey key = new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
 
         log.debug("In ReactiveJwtDecoder ");
         return NimbusReactiveJwtDecoder.withSecretKey(key)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
     }
+
+
 
 }
