@@ -1,6 +1,7 @@
 package com.ztrios.opd_appointment_service.exception;
 
 import com.ztrios.opd_appointment_service.exception.custom.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
 
@@ -59,11 +61,14 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleGeneric(Exception ex) {
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<Object> handleGeneric(Exception ex) {
-//        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred");
-//    }
+        log.error("An unexpected error occurred", ex);
+        // 3. (Optional) If you are in development, you might want to return the actual message
+        // return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred");
+    }
 
     private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message) {
         Map<String, Object> body = new LinkedHashMap<>();

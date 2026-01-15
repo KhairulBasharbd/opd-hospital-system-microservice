@@ -24,12 +24,14 @@ public class GlobalExceptionHandler {
 
 
 
-//        @ExceptionHandler(Exception.class)
-//    public ResponseEntity<Object> handleGeneric(Exception ex) {
-//            log.error("Unexpected error", ex);
-//
-//        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected Internal error occurred");
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleGeneric(Exception ex) {
+
+        log.error("An unexpected error occurred", ex);
+        // 3. (Optional) If you are in development, you might want to return the actual message
+        // return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred");
+    }
 
     private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message) {
         Map<String, Object> body = new LinkedHashMap<>();
