@@ -2,6 +2,7 @@ package com.ztrios.opd_appointment_service.exception;
 
 import com.ztrios.opd_appointment_service.exception.custom.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.requests.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,34 +27,22 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(DoctorNotFoundException.class)
-    public ResponseEntity<Object> handleDoctorNotFound(DoctorNotFoundException ex) {
+    @ExceptionHandler(DoctorScheduleNotFoundException.class)
+    public ResponseEntity<Object> handleDoctorNotFound(DoctorScheduleNotFoundException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+//      Handles all downstream (Feign) service errors
 
-    @ExceptionHandler({
-            DoctorServiceUnavailableException.class,
-            AuthServiceUnavailableException.class
-    })
-    public ResponseEntity<Object> handleDoctorServiceError(RuntimeException ex) {
-        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+    @ExceptionHandler(RemoteServiceException.class)
+    public ResponseEntity<Object> handleRemoteServiceException(
+            RemoteServiceException ex) {
+
+        log.error("Downstream error propagated: {}", ex.getMessage());
+
+        return buildErrorResponse(ex.getStatus(), ex.getMessage());
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<?> handleUserNotFound(UserNotFoundException ex) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler(BillingServiceException.class)
-    public ResponseEntity<Object> handleBillingService( BillingServiceException ex) {
-        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
-    }
-
-    @ExceptionHandler(PaymentCreationFailedException.class)
-    public ResponseEntity<Object> handlePaymentFailedError(PaymentCreationFailedException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
-    }
 
     @ExceptionHandler(DuplicateAppointmentException.class)
     public ResponseEntity<Object> handleDuplicateAppointment(DuplicateAppointmentException ex){

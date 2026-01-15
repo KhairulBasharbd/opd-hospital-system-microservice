@@ -1,4 +1,4 @@
-package com.ztrios.opd_billing_service.client;
+package com.ztrios.opd_billing_service.client.appointmentClient;
 
 
 import com.ztrios.opd_billing_service.enums.AppointmentStatus;

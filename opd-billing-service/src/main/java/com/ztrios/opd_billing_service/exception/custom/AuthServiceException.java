@@ -1,4 +1,5 @@
-package com.ztrios.opd_appointment_service.exception.custom;
+package com.ztrios.opd_billing_service.exception.custom;
+
 
 import org.springframework.http.HttpStatus;
 

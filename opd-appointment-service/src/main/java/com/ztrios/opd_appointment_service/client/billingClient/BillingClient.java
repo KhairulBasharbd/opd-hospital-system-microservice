@@ -1,6 +1,5 @@
-package com.ztrios.opd_appointment_service.client;
+package com.ztrios.opd_appointment_service.client.billingClient;
 
-import com.ztrios.opd_appointment_service.config.BillingFeignConfig;
 import com.ztrios.opd_appointment_service.dto.BillingServiceRequest;
 import com.ztrios.opd_appointment_service.dto.BillingServiceResponse;
 import org.springframework.cloud.openfeign.FeignClient;

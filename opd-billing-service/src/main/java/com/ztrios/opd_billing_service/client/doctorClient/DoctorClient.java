@@ -1,4 +1,4 @@
-package com.ztrios.opd_billing_service.client;
+package com.ztrios.opd_billing_service.client.doctorClient;
 
 
 import com.ztrios.opd_billing_service.dto.DoctorResponse;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "opd-doctor-service")
+@FeignClient(name = "opd-doctor-service", configuration = DoctorFeignConfig.class)
 public interface DoctorClient {
     @GetMapping("api/doctors/{id}")
     DoctorResponse getDoctorDetails(@PathVariable("id") UUID doctorId);

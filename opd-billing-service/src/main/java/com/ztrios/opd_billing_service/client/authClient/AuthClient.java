@@ -1,4 +1,4 @@
-package com.ztrios.opd_billing_service.client;
+package com.ztrios.opd_billing_service.client.authClient;
 
 import com.ztrios.opd_billing_service.dto.PatientProfileDetails;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "opd-auth-service")
+@FeignClient(name = "opd-auth-service", configuration = AuthFeignConfig.class)
 public interface AuthClient {
 
     @GetMapping("/internal/profile//{patientId}")

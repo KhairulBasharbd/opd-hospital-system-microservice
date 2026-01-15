@@ -1,7 +1,6 @@
-package com.ztrios.opd_appointment_service.client;
+package com.ztrios.opd_appointment_service.client.doctorClient;
 
 
-import com.ztrios.opd_appointment_service.config.DoctorFeignConfig;
 import com.ztrios.opd_appointment_service.dto.DoctorResponse;
 import com.ztrios.opd_appointment_service.dto.DoctorScheduleResponse;
 import org.springframework.cloud.openfeign.FeignClient;

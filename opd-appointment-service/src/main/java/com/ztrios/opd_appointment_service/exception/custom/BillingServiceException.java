@@ -1,7 +1,10 @@
 package com.ztrios.opd_appointment_service.exception.custom;
 
-public class BillingServiceException extends RuntimeException {
-    public BillingServiceException(String message) {
-        super(message);
+import org.springframework.http.HttpStatus;
+
+public class BillingServiceException extends RemoteServiceException {
+    public BillingServiceException(String message, HttpStatus status) {
+        super(message, status);
     }
 }
+

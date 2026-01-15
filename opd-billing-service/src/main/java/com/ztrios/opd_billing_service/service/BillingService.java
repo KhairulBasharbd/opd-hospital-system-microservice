@@ -1,8 +1,8 @@
 package com.ztrios.opd_billing_service.service;
 
-import com.ztrios.opd_billing_service.client.AppointmentClient;
-import com.ztrios.opd_billing_service.client.AuthClient;
-import com.ztrios.opd_billing_service.client.DoctorClient;
+import com.ztrios.opd_billing_service.client.appointmentClient.AppointmentClient;
+import com.ztrios.opd_billing_service.client.authClient.AuthClient;
+import com.ztrios.opd_billing_service.client.doctorClient.DoctorClient;
 import com.ztrios.opd_billing_service.dto.*;
 import com.ztrios.opd_billing_service.enums.AppointmentStatus;
 import com.ztrios.opd_billing_service.exception.custom.TotalScheduleFullException;

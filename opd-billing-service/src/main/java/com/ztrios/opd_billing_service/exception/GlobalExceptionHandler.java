@@ -1,8 +1,6 @@
 package com.ztrios.opd_billing_service.exception;
 
-import com.ztrios.opd_billing_service.exception.custom.InvoiceNotFoundException;
-import com.ztrios.opd_billing_service.exception.custom.PaymentAlreadyDoneException;
-import com.ztrios.opd_billing_service.exception.custom.TotalScheduleFullException;
+import com.ztrios.opd_billing_service.exception.custom.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +32,24 @@ public class GlobalExceptionHandler {
 
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
+
+
+    @ExceptionHandler(DoctorScheduleNotFoundException.class)
+    public ResponseEntity<Object> handleDoctorNotFound(DoctorScheduleNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+
+//     * Handles all downstream (Feign) service errors
+//     */
+    @ExceptionHandler(RemoteServiceException.class)
+    public ResponseEntity<Object> handleRemoteServiceException(RemoteServiceException ex) {
+
+        log.error("Downstream error propagated: {}", ex.getMessage());
+
+        return buildErrorResponse(ex.getStatus(), ex.getMessage());
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneric(Exception ex) {

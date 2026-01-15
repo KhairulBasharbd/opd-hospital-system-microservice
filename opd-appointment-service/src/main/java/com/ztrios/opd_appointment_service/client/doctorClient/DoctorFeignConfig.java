@@ -1,4 +1,4 @@
-package com.ztrios.opd_appointment_service.config;
+package com.ztrios.opd_appointment_service.client.doctorClient;
 
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;

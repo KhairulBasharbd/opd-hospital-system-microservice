@@ -1,8 +1,8 @@
 package com.ztrios.opd_appointment_service.service;
 
-import com.ztrios.opd_appointment_service.client.AuthClient;
-import com.ztrios.opd_appointment_service.client.BillingClient;
-import com.ztrios.opd_appointment_service.client.DoctorClient;
+import com.ztrios.opd_appointment_service.client.authClient.AuthClient;
+import com.ztrios.opd_appointment_service.client.billingClient.BillingClient;
+import com.ztrios.opd_appointment_service.client.doctorClient.DoctorClient;
 import com.ztrios.opd_appointment_service.dto.*;
 import com.ztrios.opd_appointment_service.dto.event.AppointmentConfirmedEvent;
 import com.ztrios.opd_appointment_service.dto.event.AppointmentCreatedEvent;

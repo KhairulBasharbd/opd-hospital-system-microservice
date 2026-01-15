@@ -1,4 +1,4 @@
-package com.ztrios.opd_appointment_service.config;
+package com.ztrios.opd_appointment_service.client.billingClient;
 
 
 import feign.codec.ErrorDecoder;

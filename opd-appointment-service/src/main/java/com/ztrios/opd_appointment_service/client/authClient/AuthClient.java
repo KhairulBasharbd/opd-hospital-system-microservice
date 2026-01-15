@@ -1,6 +1,5 @@
-package com.ztrios.opd_appointment_service.client;
+package com.ztrios.opd_appointment_service.client.authClient;
 
-import com.ztrios.opd_appointment_service.config.AuthFeignConfig;
 import com.ztrios.opd_appointment_service.dto.PatientProfileDetails;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

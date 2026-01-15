@@ -1,6 +1,7 @@
-package com.ztrios.opd_appointment_service.config;
+package com.ztrios.opd_billing_service.client.authClient;
 
 
+import com.ztrios.opd_billing_service.client.appointmentClient.AppointmentFeignErrorDecoder;
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
