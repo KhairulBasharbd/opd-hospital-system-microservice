@@ -115,7 +115,7 @@ The system follows a **microservices architecture**:
 - Payment status tracking
 
 **Connections**
-- MongoDB
+- MongoDB (`billing_db`)
 - Kafka consumer
 
 ---
@@ -146,7 +146,7 @@ The system follows a **microservices architecture**:
 
 | Category | Technologies |
 |------|-------------|
-| Backend | Java 21, Spring Boot 3.x, Spring Cloud |
+| Backend | Java 21, Spring Boot 4.x, Spring Cloud |
 | Databases | PostgreSQL, MongoDB |
 | Messaging / Caching | Kafka, Zookeeper, Redis |
 | Security | JWT, OAuth2, Spring Security |
@@ -160,7 +160,7 @@ The system follows a **microservices architecture**:
 
 - Java 21+
 - Docker & Docker Compose
-- Maven
+- Gradle
 
 ### Setup Steps
 
@@ -174,9 +174,9 @@ cd opd-hospital-system-microservice
 # Start infrastructure (DBs, Kafka, Redis)
 docker-compose up -d
 
-# Build and run services (start Eureka first)
-mvn clean install
-mvn spring-boot:run
+# Build and run each services (start Eureka first, Run Auth service before Doctor service)
+./gradlew clean build
+./gradlew bootRun
 ```
 
 Update `application.yml / application.properties` if needed.
