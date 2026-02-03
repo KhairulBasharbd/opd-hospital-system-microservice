@@ -1,6 +1,6 @@
 # 🏥 OPD Hospital System Microservice
 
-![OPD Hospital System Logo](docs/logo.png)
+![OPD Hospital System Logo](opd-logo.png)
 
 *A scalable microservices-based outpatient (OPD) hospital management system*
 
