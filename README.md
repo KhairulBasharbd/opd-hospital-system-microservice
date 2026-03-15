@@ -6,6 +6,16 @@
 
 ---
 
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | Full architecture reference: endpoint tables, Kafka schemas, Redis locking, DB schemas, config keys, architecture diagrams, and runbook |
+
+> The architecture document is derived directly from the source code and supersedes the endpoint examples in this README where there are differences.
+
+---
+
 ## 📌 Overview
 
 The **OPD Hospital System** manages hospital outpatient operations using a modern **microservices architecture**. It covers the complete OPD flow including **patient authentication, doctor management, appointment booking, billing, and notifications**.
@@ -160,133 +170,131 @@ The system follows a **microservices architecture**:
 
 - Java 21+
 - Docker & Docker Compose
-- Gradle
+- Gradle (wrapper included in each service – no install needed)
 
 ### Setup Steps
 
 ```bash
 # Clone repository
 git clone https://github.com/KhairulBasharbd/opd-hospital-system-microservice.git
-
-# Navigate to project
 cd opd-hospital-system-microservice
 
-# Start infrastructure (DBs, Kafka, Redis)
+# 1. Start infrastructure (PostgreSQL, MongoDB, Redis, Kafka)
 docker-compose up -d
 
-# Build and run each services (start Eureka first, Run Auth service before Doctor service)
-./gradlew clean build
-./gradlew bootRun
+# 2. Set required environment variable (must be the same for auth service AND api gateway)
+export JWT_SECRET=my-local-dev-secret-at-least-32chars
+
+# 3. Start services in order (each in its own terminal):
+#    Eureka → Auth → Doctor → Billing → Appointment → Notification → Gateway
+cd opd-eureka-server     && ./gradlew bootRun &
+cd opd-auth-service      && ./gradlew bootRun &
+cd opd-doctor-service    && ./gradlew bootRun &
+cd opd-billing-service   && ./gradlew bootRun &
+cd opd-appointment-service && ./gradlew bootRun &
+cd opd-notification-service && ./gradlew bootRun &
+cd opd-api-gateway       && ./gradlew bootRun &
 ```
 
-Update `application.yml / application.properties` if needed.
+> See [docs/ARCHITECTURE.md – Runbook](docs/ARCHITECTURE.md#10-runbook) for the complete step-by-step guide, environment variables, troubleshooting, and cURL examples.
 
 ---
 
 ## ▶️ Usage
 
 - Access system via **API Gateway**: `http://localhost:8080`
-- Use **Postman** or **Swagger UI**
-- Secure endpoints require **Bearer JWT token**
+- **Swagger UI** (all services): `http://localhost:8080/swagger-ui.html`
+- **Eureka Dashboard**: `http://localhost:8761`
+- **Kafka UI (Redpanda Console)**: `http://localhost:8089`
+- Secure endpoints require `Authorization: Bearer <JWT>` token
 
 ---
 
-## 📡 API Endpoint Examples
+## 📡 API Quick Reference
 
-> All requests go through API Gateway (`http://localhost:8080`)
+> All requests go through API Gateway (`http://localhost:8080`).  
+> For complete endpoint tables with request/response DTOs, see **[docs/ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-api-endpoint-reference)**.
 
 ### 🔐 Authentication
 
-| Method | Endpoint | Description | Auth | Example Body |
-|------|--------|-------------|------|--------------|
-| POST | `/api/auth/register` | Register patient | No | `{ "fullName": "John Doe", "email": "john@example.com", "password": "pass123" }` |
-| POST | `/api/auth/login` | Login (JWT) | No | `{ "email": "john@example.com", "password": "pass123" }` |
-| GET | `/api/auth/me` | User profile | Yes | — |
-
----
+| Method | Gateway Endpoint | Auth | Description |
+|--------|-----------------|------|-------------|
+| `POST` | `/auth/register/patient` | No | Register a patient |
+| `POST` | `/auth/register/users` | No | Create ADMIN or DOCTOR user |
+| `POST` | `/auth/login` | No | Login – returns JWT |
+| `GET` | `/auth/profile` | Yes | View patient profile |
+| `PUT` | `/auth/profile` | Yes | Update patient profile |
 
 ### 🩺 Doctor Management
 
-| Method | Endpoint | Description | Auth | Example |
-|------|--------|-------------|------|--------|
-| GET | `/api/doctors` | List doctors | Yes | `?specialization=Cardiology` |
-| GET | `/api/doctors/{id}` | Doctor details | Yes | — |
-| POST | `/api/doctors` | Create doctor | Yes (Admin) | `{ "name": "Dr. Sarah" }` |
-| PUT | `/api/doctors/{id}/schedule` | Update schedule | Yes (Doctor) | `{ "day": "Monday", "startTime": "09:00" }` |
-| GET | `/api/doctors/{id}/availability` | Available slots | Yes | `?date=2025-03-15` |
-
----
+| Method | Gateway Endpoint | Auth | Description |
+|--------|-----------------|------|-------------|
+| `POST` | `/doctors/api/doctors` | Yes | Create doctor |
+| `GET` | `/doctors/api/doctors` | Yes | List all doctors |
+| `GET` | `/doctors/api/doctors/available?date=dd/MM/yyyy&specialization=CARDIOLOGY` | Yes | Available doctors for date |
+| `GET` | `/doctors/api/doctors/{id}` | Yes | Doctor details |
+| `PUT` | `/doctors/api/doctors/{id}` | Yes | Update doctor |
+| `DELETE` | `/doctors/api/doctors/{id}` | Yes | Delete doctor |
+| `POST` | `/doctors/api/doctors/{doctorId}/schedules` | Yes | Add schedule |
+| `GET` | `/doctors/api/doctors/{doctorId}/schedules` | Yes | Doctor's schedules |
+| `PUT` | `/doctors/api/doctors/schedules/{scheduleId}` | Yes | Update schedule |
+| `DELETE` | `/doctors/api/doctors/schedules/{scheduleId}` | Yes | Delete schedule |
 
 ### 📅 Appointments
 
-| Method | Endpoint | Description | Auth | Example |
-|------|--------|-------------|------|--------|
-| POST | `/api/appointments/book` | Book appointment | Yes (Patient) | `{ "doctorId": 5, "date": "2025-03-20" }` |
-| POST | `/api/appointments/{id}/confirm` | Confirm appointment | Yes | — |
-| GET | `/api/appointments/my` | My appointments | Yes (Patient) | `?status=CONFIRMED` |
-| GET | `/api/appointments/{id}` | Appointment details | Yes | — |
-| DELETE | `/api/appointments/{id}/cancel` | Cancel appointment | Yes | `{ "reason": "Emergency" }` |
-
----
+| Method | Gateway Endpoint | Auth | Description |
+|--------|-----------------|------|-------------|
+| `POST` | `/appointments/appointments/create` | Yes | Book appointment |
 
 ### 💳 Billing
 
-| Method | Endpoint | Description | Auth | Example |
-|------|--------|-------------|------|--------|
-| GET | `/api/billing/my-invoices` | List invoices | Yes | — |
-| GET | `/api/billing/invoices/{id}` | Invoice details | Yes | — |
-| POST | `/api/billing/invoices/{id}/pay` | Pay invoice | Yes | `{ "paymentMethod": "bkash" }` |
-| GET | `/api/billing/invoices/{id}/status` | Payment status | Yes | — |
+| Method | Gateway Endpoint | Auth | Description |
+|--------|-----------------|------|-------------|
+| `POST` | `/billing/api/billing/pay/{invoiceId}` | Yes | Pay invoice |
+| `GET` | `/billing/api/billing/patient/{patientId}` | Yes | Patient's invoice history |
+
+### 📣 Notifications
+
+Fully **event-driven** via Kafka – no direct REST endpoints. Triggered automatically on appointment booking, payment, and confirmation.
 
 ---
 
-## 📣 Notifications
+## 🧪 Quick cURL Examples
 
-- Fully **event-driven**
-- No direct REST endpoints
-- Triggered automatically on:
-  - Appointment booking
-  - Appointment confirmation
-  - Payment completion
-
----
-
-## 🧪 Testing Examples (cURL)
-
-### Register
+### Register a patient
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register \
--H "Content-Type: application/json" \
--d '{"fullName":"Rahim Khan","email":"rahim@example.com","password":"securepass456"}'
+curl -X POST http://localhost:8080/auth/register/patient \
+  -H "Content-Type: application/json" \
+  -d '{"fullName":"Rahim Khan","email":"rahim@example.com","password":"securepass456"}'
 ```
 
 ### Login
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/login \
--H "Content-Type: application/json" \
--d '{"email":"rahim@example.com","password":"securepass456"}'
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"rahim@example.com","password":"securepass456"}'
 ```
 
 ### Book Appointment
 
 ```bash
-curl -X POST http://localhost:8080/api/appointments/book \
--H "Authorization: Bearer <JWT>" \
--H "Content-Type: application/json" \
--d '{"doctorId":3,"date":"2025-03-25"}'
+curl -X POST http://localhost:8080/appointments/appointments/create \
+  -H "Authorization: Bearer <JWT>" \
+  -H "Content-Type: application/json" \
+  -d '{"doctorId":"<UUID>","scheduleId":"<UUID>","date":"2025-06-20"}'
 ```
 
 ---
 
 ## 📝 Notes
 
-- Swagger / OpenAPI recommended for API documentation
-- Standard error format:
+- Swagger UI available at `http://localhost:8080/swagger-ui.html`
+- Standard error response format:
 
 ```json
-{ "status": 400, "message": "Error" }
+{ "status": 400, "message": "Error description" }
 ```
 
 ---
