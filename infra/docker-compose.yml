@@ -1,37 +1,48 @@
 version: '3.8'
 
+# ============================================================
+# OPD Hospital System – Infrastructure Services
+# Use this file to start all infrastructure dependencies
+# (databases, cache, messaging) before running the Spring Boot
+# services locally.
+#
+# Credentials here match each service's application.properties
+# defaults so the services can connect without any extra
+# environment variables.  Override via the .env file if needed.
+# ============================================================
+
 services:
-  # PostgreSQL Database
+  # ----------------------------------------------------------
+  # PostgreSQL – Auth / Doctor / Appointment databases
+  # Credentials: admin / admin  (matches application.properties)
+  # ----------------------------------------------------------
   postgres:
     image: postgres:16-alpine
     container_name: opd-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-opd_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opd_password}
-      POSTGRES_MULTIPLE_DATABASES: opd_auth_db,opd_doctor_db,opd_appointment_db
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ../init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - opd-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-opd_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # MongoDB Database
+  # ----------------------------------------------------------
+  # MongoDB – Billing database (no auth, matches service config)
+  # ----------------------------------------------------------
   mongodb:
-    image: mongo:7.0
+    image: mongo:7
     container_name: opd-mongodb
     restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-opd_user}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-opd_password}
-      MONGO_INITDB_DATABASE: opd_billing_db
     ports:
       - "27017:27017"
     volumes:
@@ -44,10 +55,91 @@ services:
       timeout: 5s
       retries: 5
 
+  # ----------------------------------------------------------
+  # Redis – Appointment slot locking
+  # ----------------------------------------------------------
+  redis:
+    image: redis:7
+    container_name: opd-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - opd-network
+
+  # ----------------------------------------------------------
+  # Kafka (KRaft mode, no ZooKeeper) – Event streaming
+  # ----------------------------------------------------------
+  kafka:
+    image: apache/kafka:4.0.0
+    container_name: opd-kafka
+    restart: unless-stopped
+    ports:
+      - "${KAFKA_PORT:-9092}:9092"
+    networks:
+      - opd-network
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_CLUSTER_ID: opd-cluster-1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@opd-kafka:9093
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://opd-kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  # ----------------------------------------------------------
+  # Redpanda Console – Kafka UI (http://localhost:8089)
+  # ----------------------------------------------------------
+  redpanda-console:
+    image: redpandadata/console:v3.3.2
+    container_name: opd-redpanda-console
+    depends_on:
+      - kafka
+    ports:
+      - "8089:8080"
+    environment:
+      KAFKA_BROKERS: opd-kafka:29092
+    networks:
+      - opd-network
+
+  # ----------------------------------------------------------
+  # pgAdmin – PostgreSQL UI (http://localhost:5050)
+  # Login: admin@admin.com / admin123
+  # ----------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: opd-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - opd-network
+
 volumes:
   postgres_data:
     driver: local
   mongodb_data:
+    driver: local
+  kafka_data:
+    driver: local
+  pgadmin_data:
     driver: local
 
 networks:
