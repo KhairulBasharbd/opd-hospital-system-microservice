@@ -12,6 +12,8 @@ The **OPD Hospital System** manages hospital outpatient operations using a moder
 
 The system is built with **Java & Spring Boot**, uses **Eureka for service discovery**, **API Gateway for routing and security**, **Kafka for event-driven communication**, and **multiple databases** optimized per service.
 
+> 📖 **See [ARCHITECTURE.md](ARCHITECTURE.md) for a comprehensive code-accurate developer guide** — including per-service endpoint tables, database schemas, Kafka event schemas, end-to-end workflows, and correct local-run instructions.
+
 ---
 
 ## ✨ Key Features
@@ -60,8 +62,8 @@ The system follows a **microservices architecture**:
 
 ### Communication Pattern
 
-- **Synchronous**: REST (via API Gateway)
-- **Asynchronous**: Kafka events
+- **Synchronous**: REST via Feign clients (inter-service) and API Gateway (client-facing)
+- **Asynchronous**: Kafka events (`APPOINTMENT_CREATED`, `APPOINTMENT_CONFIRMED`, `PAYMENT_SUCCESS`)
 
 ---
 
@@ -75,7 +77,7 @@ The system follows a **microservices architecture**:
 - OAuth2 support (extensible)
 
 **Connections**
-- PostgreSQL (`identity_db`)
+- PostgreSQL (`auth_db`)
 - Eureka registered
 
 ---
@@ -147,10 +149,10 @@ The system follows a **microservices architecture**:
 | Category | Technologies |
 |------|-------------|
 | Backend | Java 21, Spring Boot 4.x, Spring Cloud |
-| Databases | PostgreSQL, MongoDB |
-| Messaging / Caching | Kafka, Zookeeper, Redis |
-| Security | JWT, OAuth2, Spring Security |
-| Tooling | Docker Compose, Maven, Lombok, JPA |
+| Databases | PostgreSQL (auth_db, doctor_db, appointment_db), MongoDB (billing_db) |
+| Messaging / Caching | Kafka 4.0 (KRaft mode, no ZooKeeper), Redis 7 |
+| Security | JWT (HMAC-SHA256), OAuth2, Spring Security |
+| Tooling | Docker Compose, Gradle, Lombok, JPA/Hibernate |
 
 ---
 
@@ -171,15 +173,32 @@ git clone https://github.com/KhairulBasharbd/opd-hospital-system-microservice.gi
 # Navigate to project
 cd opd-hospital-system-microservice
 
-# Start infrastructure (DBs, Kafka, Redis)
+# Start infrastructure (PostgreSQL, MongoDB, Kafka, Redis, pgAdmin, Redpanda Console)
 docker-compose up -d
 
-# Build and run each services (start Eureka first, Run Auth service before Doctor service)
-./gradlew clean build
-./gradlew bootRun
+# Set the JWT secret (must be the same for API Gateway and Auth Service)
+export JWT_SECRET="your-secret-key-at-least-32-chars"
+
+# Start services in order (each in its own terminal):
+# 1. Eureka Server
+cd opd-eureka-server && ../gradlew bootRun
+
+# 2. API Gateway
+cd opd-api-gateway && JWT_SECRET=$JWT_SECRET ../gradlew bootRun
+
+# 3. Auth Service
+cd opd-auth-service && JWT_SECRET=$JWT_SECRET ../gradlew bootRun
+
+# 4. Doctor Service (after Auth is up)
+cd opd-doctor-service && ../gradlew bootRun
+
+# 5. Appointment + Billing + Notification Services
+cd opd-appointment-service && ../gradlew bootRun
+cd opd-billing-service     && ../gradlew bootRun
+cd opd-notification-service && ../gradlew bootRun
 ```
 
-Update `application.yml / application.properties` if needed.
+> 📖 See **[ARCHITECTURE.md](ARCHITECTURE.md)** for the complete startup guide, port list, and management UIs.
 
 ---
 
@@ -199,44 +218,38 @@ Update `application.yml / application.properties` if needed.
 
 | Method | Endpoint | Description | Auth | Example Body |
 |------|--------|-------------|------|--------------|
-| POST | `/api/auth/register` | Register patient | No | `{ "fullName": "John Doe", "email": "john@example.com", "password": "pass123" }` |
-| POST | `/api/auth/login` | Login (JWT) | No | `{ "email": "john@example.com", "password": "pass123" }` |
-| GET | `/api/auth/me` | User profile | Yes | — |
+| POST | `/auth/register/patient` | Register patient | No | `{ "fullName": "John Doe", "email": "john@example.com", "password": "pass123" }` |
+| POST | `/auth/login` | Login (JWT) | No | `{ "email": "john@example.com", "password": "pass123" }` |
+| GET | `/auth/profile/` | User profile | Yes (JWT) | — |
 
 ---
 
 ### 🩺 Doctor Management
 
-| Method | Endpoint | Description | Auth | Example |
-|------|--------|-------------|------|--------|
-| GET | `/api/doctors` | List doctors | Yes | `?specialization=Cardiology` |
-| GET | `/api/doctors/{id}` | Doctor details | Yes | — |
-| POST | `/api/doctors` | Create doctor | Yes (Admin) | `{ "name": "Dr. Sarah" }` |
-| PUT | `/api/doctors/{id}/schedule` | Update schedule | Yes (Doctor) | `{ "day": "Monday", "startTime": "09:00" }` |
-| GET | `/api/doctors/{id}/availability` | Available slots | Yes | `?date=2025-03-15` |
+| Method | Endpoint | Description | Auth |
+|------|--------|-------------|------|
+| GET | `/doctors/api/doctors` | List all doctors | Yes |
+| GET | `/doctors/api/doctors/{id}` | Doctor details | Yes |
+| POST | `/doctors/api/doctors/` | Create doctor | Yes (Admin) |
+| POST | `/doctors/api/doctors/{id}/schedules` | Create schedule | Yes (Admin) |
+| GET | `/doctors/api/doctors/available` | Available doctors (`?date=dd/MM/yyyy&specialization=CARDIOLOGY`) | Yes |
 
 ---
 
 ### 📅 Appointments
 
-| Method | Endpoint | Description | Auth | Example |
-|------|--------|-------------|------|--------|
-| POST | `/api/appointments/book` | Book appointment | Yes (Patient) | `{ "doctorId": 5, "date": "2025-03-20" }` |
-| POST | `/api/appointments/{id}/confirm` | Confirm appointment | Yes | — |
-| GET | `/api/appointments/my` | My appointments | Yes (Patient) | `?status=CONFIRMED` |
-| GET | `/api/appointments/{id}` | Appointment details | Yes | — |
-| DELETE | `/api/appointments/{id}/cancel` | Cancel appointment | Yes | `{ "reason": "Emergency" }` |
+| Method | Endpoint | Description | Auth |
+|------|--------|-------------|------|
+| POST | `/appointments/appointments/create` | Book appointment | Yes (Patient) |
 
 ---
 
 ### 💳 Billing
 
-| Method | Endpoint | Description | Auth | Example |
-|------|--------|-------------|------|--------|
-| GET | `/api/billing/my-invoices` | List invoices | Yes | — |
-| GET | `/api/billing/invoices/{id}` | Invoice details | Yes | — |
-| POST | `/api/billing/invoices/{id}/pay` | Pay invoice | Yes | `{ "paymentMethod": "bkash" }` |
-| GET | `/api/billing/invoices/{id}/status` | Payment status | Yes | — |
+| Method | Endpoint | Description | Auth |
+|------|--------|-------------|------|
+| POST | `/billing/api/billing/pay/{invoiceId}` | Pay invoice | Yes |
+| GET | `/billing/api/billing/patient/{patientId}` | Patient invoice history | Yes |
 
 ---
 
@@ -256,7 +269,7 @@ Update `application.yml / application.properties` if needed.
 ### Register
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register \
+curl -X POST http://localhost:8080/auth/register/patient \
 -H "Content-Type: application/json" \
 -d '{"fullName":"Rahim Khan","email":"rahim@example.com","password":"securepass456"}'
 ```
@@ -264,7 +277,7 @@ curl -X POST http://localhost:8080/api/auth/register \
 ### Login
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/login \
+curl -X POST http://localhost:8080/auth/login \
 -H "Content-Type: application/json" \
 -d '{"email":"rahim@example.com","password":"securepass456"}'
 ```
@@ -272,10 +285,19 @@ curl -X POST http://localhost:8080/api/auth/login \
 ### Book Appointment
 
 ```bash
-curl -X POST http://localhost:8080/api/appointments/book \
+curl -X POST http://localhost:8080/appointments/appointments/create \
 -H "Authorization: Bearer <JWT>" \
 -H "Content-Type: application/json" \
--d '{"doctorId":3,"date":"2025-03-25"}'
+-d '{"doctorId":"<doctor-uuid>","scheduleId":"<schedule-uuid>","date":"2026-03-25"}'
+```
+
+### Pay Invoice
+
+```bash
+curl -X POST http://localhost:8080/billing/api/billing/pay/<invoice-uuid> \
+-H "Authorization: Bearer <JWT>" \
+-H "Content-Type: application/json" \
+-d '{"paymentMethod":"CARD"}'
 ```
 
 ---

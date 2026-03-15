@@ -11,6 +11,6 @@ import java.util.UUID;
 @FeignClient(name = "opd-auth-service", configuration = AuthFeignConfig.class)
 public interface AuthClient {
 
-    @GetMapping("/internal/profile//{patientId}")
+    @GetMapping("/internal/profile/{patientId}")
     PatientProfileDetails getPatientSummary(@PathVariable UUID patientId);
 }
